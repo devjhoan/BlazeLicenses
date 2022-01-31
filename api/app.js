@@ -104,6 +104,11 @@ app.post('/api/client/', async (req, res) => {
     }
 });
 
+app.get('*', async (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.send("");
+});
+
 // Start Server
 app.listen(config.LICENSES_CONFIG.WEB_PORT || 3000, () => {
     console.log("REST API Server started on port 3000");

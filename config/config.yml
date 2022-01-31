@@ -14,7 +14,7 @@ BOT_CONFIG:
 
 ACTIVITY:
   ENABLED: true
-  ACTIVITIES: # Variables disponibles - {miembros} - {bots} - {uptime} - {canales} - {guilds} - {tickets}
+  ACTIVITIES:
     - ["PLAYING", "Strider Development"]
   INTERVAL: "12h"
 

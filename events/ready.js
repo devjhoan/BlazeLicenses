@@ -10,8 +10,8 @@ client.on("ready", async () => {
             status = client.config.ACTIVITY.ACTIVITIES[pos];
             pos++;
             if (Array.isArray(status)) {
-                client.user.setPresence({activities: [{ name: status[1].replace('{miembros}', client.users.cache.size).replace('{canales}', client.channels.cache.size).replace(/{guilds}/g, client.guilds.cache.size).replace('{uptime}', ms(client.uptime, { long: true })), type: status[0] }]});
-            } else client.user.setPresence(status).replace('{miembros}', client.users.cache.size).replace('{canales}', client.channels.cache.size).replace('{bots}', client.bots.cache.size).replace(/{guilds}/g, client.guilds.cache.size).replace('{uptime}', ms(client.uptime, { long: true }));
+                client.user.setPresence({activities: [{ name: status[1], type: status[0] }]});
+            } else client.user.setPresence(status);
         }
         nextStatus();
         setInterval(nextStatus, ms(client.config.ACTIVITY.INTERVAL))
