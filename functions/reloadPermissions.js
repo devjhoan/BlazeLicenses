@@ -6,7 +6,7 @@ module.exports = async (guild, client) => {
 
     const getAllCustomers = async () => {
         const users = await licenseModel.find();
-        if(users?.length == 0) return [guild.ownerId];
+        if(users?.length == 0) return [client.user.id];
         return users.map(x => x.discord_id);
     }
 

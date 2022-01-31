@@ -1,4 +1,5 @@
 // Packages required:
+const { MessageEmbed, WebhookClient } = require("discord.js");
 const express = require("express");
 const fs = require("fs");
 const yaml = require("js-yaml");
@@ -9,6 +10,8 @@ const app = express();
 // Config Server
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+let hook;
+if(config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) hook = new WebhookClient({url: config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
 
 // Models Mongoose
 const licenseModel = require('../models/licenseModel');
@@ -19,6 +22,7 @@ const usersModel = require("../models/usersModel");
 app.post('/api/client/', async (req, res) => {
     // Importing variables
     const { licensekey, product, version } = req.body;
+    const ip = req.socket?.remoteAddress.replace(/^.*:/, '');
     const authorization_key = req.headers.authorization;
 
     // Checking if the license is valid
@@ -54,13 +58,34 @@ app.post('/api/client/', async (req, res) => {
                             }
                         }
                         
-                        const ip = req.socket?.remoteAddress.replace(/^.*:/, '');
                         if(!license_db.ip_list.includes(ip)) license_db.ip_list.push(ip);
-
                         if(license_db.latest_ip != ip) license_db.latest_ip = ip;
 
                         license_db.total_requests++;
                         await license_db.save();
+
+                        const ip_list = license_db.ip_list.map((ip, i) => `${i + 1}: ${ip}`)
+                        if(ip_list.length == 0) ip_list.push("1: None");
+
+                        if(hook) {
+                            hook.send({embeds: [
+                                new MessageEmbed()
+                                    .setAuthor({name: "Successful authentication", iconURL: config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_IMAGE})
+                                    .setColor("GREEN")
+                                    .addFields([
+                                        {name: "License Key", value: "```yaml\n" + licensekey + "```", inline: false},
+                                        {name: "Clientname", value: license_db.clientname, inline: true},
+                                        {name: "Discord ID", value: license_db.discord_id, inline: true},
+                                        {name: "Discord username", value: license_db.discord_username, inline: true},
+                                        {name: "Version", value: version.toString(), inline: true},
+                                        {name: "Product", value: product, inline: true},
+                                        {name: "Created by", value: license_db.created_by, inline: true},
+                                        {name: "Created at", value: `<t:${(license_db.createdAt / 1000 | 0)}:R>`, inline: true},
+                                        {name: "IP-cap", value: `${license_db.ip_list.length}/${license_db.ip_cap}`, inline: true},
+                                        {name: "IP-list", value: "```yaml\n" + ip_list.join("\n") + "```", inline: false},
+                                    ])
+                            ]})
+                        }
 
                         return res.send({
                             "status_msg": "SUCCESSFUL_AUTHENTICATION",
@@ -81,6 +106,19 @@ app.post('/api/client/', async (req, res) => {
                         });
                     }
                 } else {
+                    if(hook) {
+                        hook.send({embeds: [
+                            new MessageEmbed()
+                                .setAuthor({name: "Invalid licensekey", iconURL: config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_IMAGE})
+                                .setColor("DARK_RED")
+                                .addField("**Licensekey**", "```yaml\n" + licensekey + "```")
+                                .addField("**IP-Address**", ip, false)
+                                .addField("**Product**", product, true)
+                                .addField("**Version**", version, true)
+                                .setFooter({text: "Blaze Licenses"})
+                                .setTimestamp()
+                        ]})
+                    }
                     return res.send({
                         "status_msg": "INVALID_LICENSEKEY",
                         "status_overview": "failed",
@@ -89,7 +127,7 @@ app.post('/api/client/', async (req, res) => {
                 }
             } else {
                 return res.send({
-                    "status_msg": "INVALID_PRODUCT",
+                    "status_msg": "PRODUCT_NOT_FOUND",
                     "status_overview": "failed",
                     "status_code": 401
                 });

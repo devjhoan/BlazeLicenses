@@ -238,7 +238,7 @@ module.exports = {
                                     user.total_licenses += 1;
                                     await user.save();
 
-                                    reloadPermissions(interaction.guild, client);
+                                    await reloadPermissions(interaction.guild, client);
 
                                     interaction.editReply({embeds: [
                                         new MessageEmbed()
