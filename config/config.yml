@@ -1,0 +1,27 @@
+##########################################
+#              Bot Config                #
+##########################################
+
+BOT_CONFIG:
+  PREFIX: "-"
+  MONGO_URI: "mongodb+srv://strider-dev:Jhoan2020@strider-dev.nbjci.mongodb.net/Blaze"
+  TOKEN: "OTM3MTI4ODkwNzEzOTAzMTY0.YfXPSg.CLHYqdKpzASVxDOAQjZgMVq4Ntc"
+  GUILD_ID: "887479733732921376"
+
+##########################################
+#            Activity Config             #
+##########################################
+
+ACTIVITY:
+  ENABLED: true
+  ACTIVITIES: # Variables disponibles - {miembros} - {bots} - {uptime} - {canales} - {guilds} - {tickets}
+    - ["PLAYING", "Strider Development"]
+  INTERVAL: "12h"
+
+##########################################
+#            Licenses Config             #
+##########################################
+
+LICENSES_CONFIG:
+  WEB_PORT: 3000
+  AUTH_KEY: "LP4CFXBVYI9SHWTE78QG2ZKR5O6DJ3UM"
