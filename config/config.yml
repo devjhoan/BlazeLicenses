@@ -3,7 +3,6 @@
 ##########################################
 
 BOT_CONFIG:
-  PREFIX: "-"
   MONGO_URI: "mongodb://localhost:27017/discord"
   TOKEN: "TOKEN_DISCORD_BOT"
   GUILD_ID: "SERVER_ID"
