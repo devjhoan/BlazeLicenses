@@ -4,9 +4,9 @@
 
 BOT_CONFIG:
   PREFIX: "-"
-  MONGO_URI: "mongodb+srv://strider-dev:Jhoan2020@strider-dev.nbjci.mongodb.net/Blaze"
-  TOKEN: "OTM3MTI4ODkwNzEzOTAzMTY0.YfXPSg.CLHYqdKpzASVxDOAQjZgMVq4Ntc"
-  GUILD_ID: "887479733732921376"
+  MONGO_URI: "mongodb://localhost:27017/discord"
+  TOKEN: "TOKEN_DISCORD_BOT"
+  GUILD_ID: "SERVER_ID"
 
 ##########################################
 #            Activity Config             #
@@ -26,5 +26,5 @@ LICENSES_CONFIG:
   WEB_PORT: 3000
   LOG_SYSTEM:
     ENABLED: true
-    WEBHOOK_URL: "https://discord.com/api/webhooks/937774369185333271/5T_XHC4L3Ok64ub_vwux7P0ucnTKNc4bZ64-JG1pZS9hA4Rq_8lr8eyQvPZ67d4xh2Lm"
-    WEBHOOK_IMAGE: "https://i.imgur.com/JuvRZOI.png"
+    WEBHOOK_URL: "WEBHOOK_URL"
+    WEBHOOK_IMAGE: "WEBHOOK_IMAGE"
