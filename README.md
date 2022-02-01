@@ -4,6 +4,13 @@ Blaze es un sistema de licencias complejo pero simple de usar, que evitará que 
 
 Con una simple petición **POST** puede saber si el usuario tiene permitido usar el software. Todo esto se maneja desde un bot de Discord con la capacidad de crear licencias, editarlas, eliminarlas y muchas otras cosas.
 
+## Translations 🌐
+
+This README is also available in other languages:
+
+- [Español](https://github.com/DevJhoan/BlazeLicenses/blob/master/README.md) (Spanish)
+- [English](https://github.com/DevJhoan/BlazeLicenses/blob/master/README_EN.md) (English)
+
 ## Características 🔥
 
 Aquí están algunas de las características de este sistema.
