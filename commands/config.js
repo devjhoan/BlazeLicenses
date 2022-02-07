@@ -18,22 +18,12 @@ module.exports = {
      * @param {CommandInteraction} interaction
      * @param {String[]} args
      */
-    run: async (client, interaction, args) => {
+    run: async (client, interaction, args) => {          
         const [SubCommand] = args;
         if (SubCommand === "api-keys") {
             // Check if the user have a user in the database
             const user = await usersModel.findOne({ user_id: interaction.user.id });
-            if (!user) {
-                return interaction.reply({embeds: [
-                    new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .setTitle("❌ You don't have a user")
-                    .setDescription("You need to create a user before you can get your API-keys")
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("RED")
-                    .setTimestamp()
-                ], ephemeral: true});
-            }
+            if (!user) client.noRegister(interaction);
 
             // If the user no is admin, return an error
             if (user.role !== "admin") {
