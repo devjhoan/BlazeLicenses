@@ -1,7 +1,5 @@
 const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require("discord.js");
-const reloadPermissions = require("../functions/reloadPermissions");
-const paginationEmbed = require("../functions/paginationEmbed");
-const genLicense = require("../functions/generateLicense");
+const { generateLicense, reloadPermissions, paginationEmbed, ask, cancelAsk } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
 const licenseModel = require("../models/licenseModel");
 const usersModel = require("../models/usersModel");
@@ -99,27 +97,16 @@ module.exports = {
     run: async (client, interaction, args) => {
         // User Check
         const user = await usersModel.findOne({user_id: interaction.user.id});
-        if(!user) {
-            return interaction.reply({embeds: [
-                new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .setTitle("❌ You are not registered!")
-                    .setDescription("You need have a user registered for use this command!")
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("RED")
-            ], ephemeral: true});
-        }
+        if(!user) client.noRegister(interaction);
         
         const [SubCommand] = args;
         if(SubCommand == "create") {
-            // General Variables
-            let license, clientname, discord_id, ip_cap
-
             const products = await productModel.find();
+
             if(!products || products?.length == 0) return interaction.reply(`🚫 there are no products!`);
             const i_name = products.map((product, i) => `${i + 1}: ${product.name}`);
 
-            await interaction.reply({embeds: [
+            const productName = (await ask({embeds: [
                 new MessageEmbed()
                     .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
                     .setDescription("You started license creation process. You have 2 minutes to finish creating a new license key. All you need to do is answer to my questions.")
@@ -129,146 +116,129 @@ module.exports = {
                     .setFooter({text: "Blaze Licenses"})
                     .setTimestamp()
                     .setColor("AQUA")
-            ]})
+            ]}, interaction))?.content;
 
-            const msg = await interaction.fetchReply();
-            const filter = (m) => m.author.id === interaction.user.id;
-            await interaction.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
-                const response = val.first().content;
-                val.first().delete();
-                if(response.toLowerCase() == "cancel") return interaction.editReply({embeds: [msg.embeds[0].setColor("RED")]});
-                
-                const product = products.find((product) => product.name.toLowerCase() == response.toLowerCase());
-                if(!product) return interaction.editReply({embeds: [msg.embeds[0].setColor("RED").setTitle("**❌ Invalid product name!**")]});
-                license =  genLicense();
+            const fetchMessage = await interaction.fetchReply();
+            if(cancelAsk(fetchMessage, productName, interaction)) return;
 
-                await interaction.editReply({embeds: [
+            const product = products.find((product) => product.name.toLowerCase() == productName.toLowerCase());
+            if(!product) return interaction.editReply({embeds: [fetchMessage.embeds[0].setColor("RED").setTitle("**❌ Invalid product name!**")]});
+            const licenseKey =  generateLicense();
+
+            const clientName = (await ask({embeds: [
+                new MessageEmbed()
+                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                    .addField("**❯ Question [2/5]**", "What is the name of the client who is using this license?")
+                    .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}` + "```")
+                    .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                    .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                    .setFooter({text: "Blaze Licenses"})
+                    .setTimestamp()
+                    .setColor("AQUA")
+            ]}, interaction, false))?.content;
+
+            const fetchMessage2 = await interaction.fetchReply();
+            if(cancelAsk(fetchMessage2, clientName, interaction)) return;
+
+            const discordClient = await ask({embeds: [
+                new MessageEmbed()
+                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                    .addField("**❯ Question [3/5]**", "Does this client have a Discord account? mention/discord id")
+                    .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}` + "```")
+                    .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                    .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                    .setFooter({text: "Blaze Licenses"})
+                    .setTimestamp()
+                    .setColor("AQUA")
+            ]}, interaction, false);
+
+            const fetchMessage3 = await interaction.fetchReply();
+            if(cancelAsk(fetchMessage3, discordClient, interaction)) return;
+            
+            const discordId = discordClient.mentions.users.first() || interaction.guild.members.cache.get(discordClient.content);
+            if(!discordId) return interaction.editReply({embeds: [fetchMessage.embeds[0].setColor("RED").setTitle("**❌ Invalid Discord ID!**")]});
+
+            const ipCap = (await ask({embeds: [
+                new MessageEmbed()
+                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                    .addField("**❯ Question [4/5]**", "Set IP-Cap for this license! number/none")
+                    .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}` + "```")
+                    .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                    .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                    .setFooter({text: "Blaze Licenses"})
+                    .setTimestamp()
+                    .setColor("AQUA")
+            ]}, interaction, false))?.content;
+            let ip_cap;
+
+            const fetchMessage4 = await interaction.fetchReply();
+            if(cancelAsk(fetchMessage4, ipCap, interaction)) return;
+            
+            if(ipCap.toLowerCase() == "none" || !parseInt(ipCap)) ip_cap = 0;
+            else ip_cap = parseInt(ipCap);
+
+            const createLicense = (await ask({embeds: [
+                new MessageEmbed()
+                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                    .addField("**❯ Question [5/5]**", "Do you want to create this license key? true/false")
+                    .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
+                    .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                    .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                    .setFooter({text: "Blaze Licenses"})
+                    .setTimestamp()
+                    .setColor("AQUA")
+            ]}, interaction, false))?.content;
+
+            const fetchMessage5 = await interaction.fetchReply();
+            if(cancelAsk(fetchMessage5, createLicense, interaction)) return;
+            
+            if(createLicense.toLowerCase() == "true" || createLicense.toLowerCase() == "yes") {
+                const newLicense = new licenseModel({
+                    product_name: product.name,
+                    licensekey: licenseKey,
+                    clientname: clientName,
+                    discord_id: discordId.id,
+                    discord_username: discordId.username,
+                    discord_tag: discordId.tag,
+                    ip_cap: ip_cap,
+                    created_by: interaction.tag,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                });
+                await newLicense.save();
+
+                product.total_purchases += 1;
+                await product.save();
+
+                user.total_licenses += 1;
+                await user.save();
+
+                await reloadPermissions(interaction.guild, client);
+
+                interaction.editReply({embeds: [
                     new MessageEmbed()
                         .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                        .addField("**❯ Question [2/5]**", "What is the name of the client who is using this license?")
-                        .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}` + "```")
-                        .addField("**❯ License key**", "```yaml\n" + license + "```")
+                        .setTitle("**✅ License created!**")
+                        .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
+                        .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                         .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
                         .setFooter({text: "Blaze Licenses"})
                         .setTimestamp()
-                        .setColor("AQUA")
-                ]})
-
-                const msg2 = await interaction.fetchReply();
-                await interaction.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
-                    val.first().delete();
-                    const response = val.first().content;
-                    if(response.toLowerCase() == "cancel") return interaction.editReply({embeds: [msg2.embeds[0].setColor("RED")]});
-                    clientname = response;
-
-                    await interaction.editReply({embeds: [
-                        new MessageEmbed()
-                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .addField("**❯ Question [3/5]**", "Does this client have a Discord account? mention/discord id")
-                            .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientname}` + "```")
-                            .addField("**❯ License key**", "```yaml\n" + license + "```")
-                            .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
-                            .setFooter({text: "Blaze Licenses"})
-                            .setTimestamp()
-                            .setColor("AQUA")
-                    ]})
-
-                    const msg3 = await interaction.fetchReply();
-                    await interaction.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
-                        val.first().delete();
-                        const response = val.first().mentions.members.first() || val.first().guild.members.cache.get(val.first().content);
-                        if(response == "cancel") return interaction.editReply({embeds: [msg3.embeds[0].setColor("RED")]});
-                        discord_id = response;
-
-                        await interaction.editReply({embeds: [
-                            new MessageEmbed()
-                                .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                .addField("**❯ Question [4/5]**", "Set IP-Cap for this license! number/none")
-                                .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientname}\nDiscord id: ${discord_id.id}` + "```")
-                                .addField("**❯ License key**", "```yaml\n" + license + "```")
-                                .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
-                                .setFooter({text: "Blaze Licenses"})
-                                .setTimestamp()
-                                .setColor("AQUA")
-                        ]});
-
-                        const msg4 = await interaction.fetchReply();
-                        await interaction.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
-                            val.first().delete();
-                            const response = val.first().content;
-                            if(response.toLowerCase() == "cancel") return interaction.editReply({embeds: [msg4.embeds[0].setColor("RED")]});
-                            if(response.toLowerCase() == "none" || !parseInt(response)) ip_cap = 0;
-                            else ip_cap = parseInt(response);
-
-                            await interaction.editReply({embeds: [
-                                new MessageEmbed()
-                                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                    .addField("**❯ Question [5/5]**", "Do you want to create this license key? true/false")
-                                    .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientname}\nDiscord id: ${discord_id.id}\nIP-Cap: ${ip_cap}` + "```")
-                                    .addField("**❯ License key**", "```yaml\n" + license + "```")
-                                    .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
-                                    .setFooter({text: "Blaze Licenses"})
-                                    .setTimestamp()
-                                    .setColor("AQUA")
-                            ]})
-                            
-                            const msg5 = await interaction.fetchReply();
-                            await interaction.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
-                                val.first().delete();
-                                const response = val.first().content;
-                                if(response.toLowerCase() == "cancel") return interaction.editReply({embeds: [msg5.embeds[0].setColor("RED")]});
-                                if(response.toLowerCase() == "true") {
-                                    const newLicense = new licenseModel({
-                                        product_name: product.name,
-                                        licensekey: license,
-                                        clientname: clientname,
-                                        discord_id: discord_id.id,
-                                        discord_username: discord_id.user.username,
-                                        discord_tag: discord_id.user.tag,
-                                        ip_cap: ip_cap,
-                                        created_by: interaction.user.tag,
-                                        createdAt: Date.now(),
-                                        updatedAt: Date.now()
-                                    });
-                                    await newLicense.save();
-
-                                    product.total_purchases += 1;
-                                    await product.save();
-
-                                    user.total_licenses += 1;
-                                    await user.save();
-
-                                    await reloadPermissions(interaction.guild, client);
-
-                                    interaction.editReply({embeds: [
-                                        new MessageEmbed()
-                                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                            .setTitle("**✅ License created!**")
-                                            .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientname}\nDiscord id: ${discord_id.id}\nIP-Cap: ${ip_cap}` + "```")
-                                            .addField("**❯ License key**", "```yaml\n" + license + "```")
-                                            .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
-                                            .setFooter({text: "Blaze Licenses"})
-                                            .setTimestamp()
-                                            .setColor("GREEN")
-                                    ]})
-                                } else {
-                                    interaction.editReply({embeds: [
-                                        new MessageEmbed()
-                                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                            .setTitle("**❌ License creation canceled!**")
-                                            .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientname}\nDiscord id: ${discord_id.id}\nIP-Cap: ${ip_cap}` + "```")
-                                            .addField("**❯ License key**", "```yaml\n" + license + "```")
-                                            .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
-                                            .setFooter({text: "Blaze Licenses"})
-                                            .setTimestamp()
-                                            .setColor("RED")
-                                    ]})
-                                }
-                            });
-                        });
-                    });
-                });
-            });
+                        .setColor("GREEN")
+                ]});
+            } else {
+                interaction.editReply({embeds: [
+                    new MessageEmbed()
+                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                        .setTitle("**❌ License creation canceled!**")
+                        .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
+                        .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                        .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                        .setFooter({text: "Blaze Licenses"})
+                        .setTimestamp()
+                        .setColor("RED")
+                ]});
+            }
         } else if(SubCommand == "list") {
             // Get all licenses
             const licenses = await licenseModel.find();
