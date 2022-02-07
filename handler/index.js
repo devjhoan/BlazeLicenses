@@ -1,4 +1,4 @@
-const reloadPermissions = require('../functions/reloadPermissions');
+const { reloadPermissions } = require("../functions/Utils");
 const { glob } = require("glob");
 const { promisify } = require("util");
 const mongoose = require("mongoose");
