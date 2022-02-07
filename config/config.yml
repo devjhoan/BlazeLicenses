@@ -3,9 +3,9 @@
 ##########################################
 
 BOT_CONFIG:
-  MONGO_URI: "mongodb://localhost:27017/discord"
-  TOKEN: "TOKEN_DISCORD_BOT"
-  GUILD_ID: "SERVER_ID"
+  MONGO_URI: "mongodb+srv://strider-dev:1FfUMui7btySjyUV@strider-dev.nbjci.mongodb.net/BlazeLicenseBot"
+  TOKEN: "OTQwMzA5NzQ2ODIzNjEwNDA4.YgFhsQ.IN1cWN_xKqjTnti9mrPqpNXDqAI"
+  GUILD_ID: "887479733732921376"
 
 ##########################################
 #            Activity Config             #
@@ -24,6 +24,6 @@ ACTIVITY:
 LICENSES_CONFIG:
   WEB_PORT: 3000
   LOG_SYSTEM:
-    ENABLED: true
+    ENABLED: false
     WEBHOOK_URL: "WEBHOOK_URL"
     WEBHOOK_IMAGE: "WEBHOOK_IMAGE"
