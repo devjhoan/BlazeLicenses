@@ -1,7 +1,6 @@
 const { Client, CommandInteraction, MessageEmbed } = require("discord.js");
-const paginationEmbed = require("../functions/paginationEmbed");
+const { paginationEmbed } = require("../functions/Utils");
 const licenseModel = require("../models/licenseModel");
-const usersModel = require("../models/usersModel");
 
 module.exports = {
     name: "self",

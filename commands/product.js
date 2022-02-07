@@ -1,6 +1,7 @@
 const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
+const { paginationEmbed } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
-const paginationEmbed = require("../functions/paginationEmbed");
+const usersModel = require("../models/usersModel");
 
 module.exports = {
     name: "product",
@@ -71,6 +72,10 @@ module.exports = {
      * @param {String[]} args
      */
     run: async (client, interaction, args) => {
+        // User Check
+        const user = await usersModel.findOne({user_id: interaction.user.id});
+        if(!user) client.noRegister(interaction);
+        
         const [SubCommand] = args;
         if(SubCommand == "create") {
             // Options of the product

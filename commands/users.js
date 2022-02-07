@@ -1,6 +1,5 @@
 const { Client, CommandInteraction, MessageEmbed } = require("discord.js");
-const reloadPermissions = require("../functions/reloadPermissions");
-const paginationEmbed = require("../functions/paginationEmbed");
+const { reloadPermissions, paginationEmbed, generateApi } = require("../functions/Utils");
 const usersModel = require("../models/usersModel");
 
 module.exports = {
@@ -91,46 +90,48 @@ module.exports = {
 
             // Check if have guildData
             const guildData = await usersModel.find();
-            if(guildData.length == 0) {
-                if(user.id !== interaction.user.id) {
-                    return interaction.reply({embeds: [
-                        new MessageEmbed()
-                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .setTitle("❌ Need have an account!")
-                            .setDescription("First create your account before another user!")
-                            .setFooter({text: "Blaze Licenses"})
-                            .setColor("RED")
-                    ], ephemeral: true});
-                }
-            }
+            if(guildData?.length == 0) {
+                    if(role !== "admin") {
+                        return interaction.reply({embeds: [
+                            new MessageEmbed()
+                                .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                                .setTitle("❌ First user must be an admin!")
+                                .setDescription("The first user must be an admin!")
+                                .setFooter({text: "Blaze Licenses"})
+                                .setColor("RED")
+                        ], ephemeral: true});
+                    }
+            };
+
+            // Search in the database if the user is already registered
+            const userExist = await usersModel.findOne({user_id: user.id});
+            if(userExist) {
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+                        .setTitle("❌ User already registered!")
+                        .setDescription("The user is already registered!")
+                        .setFooter({text: "Blaze Licenses"})
+                        .setColor("RED")
+                ], ephemeral: true});
+            };
 
             // Create the user
             const userModel = new usersModel({
-                name,
+                name: name,
                 user_id: user.id,
-                role,
+                role: role,
                 licenses_created: 0,
                 created_by: interaction.user.id,
                 created_at: new Date(),
-            })
+            });
 
             if(role == "admin") {
-                const genApi = (times) => {
-                    const string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                    let api = "";
-                    for(let i = 0; i < times; i++) {
-                        api += string[Math.floor(Math.random() * string.length)];
-                    }
-                    return api;
-                }
-                userModel.api_key = genApi(40);
-            }
+                userModel.api_key = generateApi(48);
+            };
 
             // Save the user
             await userModel.save();
-
-            // Reload permissions
-            await reloadPermissions(interaction.guild, client);
 
             // Send a message to the user that the user was created
             interaction.reply({embeds: [
@@ -140,10 +141,13 @@ module.exports = {
                     .addField("**❯ User name**", name)
                     .addField("**❯ User role**", role.replace("mod", "Moderator").replace("admin", "Administrator"))
                     .addField("**❯ User ID**", user.id)
-                    .setTimestamp()
-                    .setColor("AQUA")
                     .setFooter({text: "Blaze Licenses"})
+                    .setColor("AQUA")
+                    .setTimestamp()
             ]});
+
+            // Reload permissions
+            return await reloadPermissions(interaction.guild, client);
         } else if(SubCommand == "list") {
             // Get all the users
             const users = await usersModel.find({});
@@ -161,9 +165,9 @@ module.exports = {
                     .addField("**❯ User ID**", user.user_id, true)
                     .addField("**❯ Created by**",  (await client.users.fetch(user.created_by)).tag, true)
                     .addField("**❯ Created at**", `<t:${(user.created_at / 1000 | 0).toString()}:R>`, true)
-                    .setTimestamp()
-                    .setColor("AQUA")
                     .setFooter({text: "Blaze Licenses"})
+                    .setColor("AQUA")
+                    .setTimestamp()
                 );
             }
             if(embeds.length == 1) return interaction.reply({embeds});
@@ -179,9 +183,6 @@ module.exports = {
             // Remove the user
             await usersModel.deleteOne({user_id: user.id});
 
-            // Reload permissions
-            await reloadPermissions(interaction.guild, client);
-
             interaction.reply({embeds: [
                 new MessageEmbed()
                     .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
@@ -196,6 +197,8 @@ module.exports = {
                     .setColor("AQUA")
                     .setFooter({text: "Blaze Licenses"})
             ]})
+            // Reload permissions
+            await reloadPermissions(interaction.guild, client);
         }
     },
 };

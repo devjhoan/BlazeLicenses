@@ -11,6 +11,16 @@ module.exports = client;
 client.commands = new Collection();
 client.permissions = [];
 client.config = yaml.load(fs.readFileSync("config/config.yml", "utf8"), 4);
+client.noRegister = (interaction) => {
+    return interaction.reply({embeds: [
+        new MessageEmbed()
+            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
+            .setTitle("❌ You are not registered!")
+            .setDescription("You need have a user registered for use this command!")
+            .setFooter({text: "Blaze Licenses"})
+            .setColor("RED")
+    ], ephemeral: true});
+}
 
 // Initializing the project
 require("./handler")(client);
