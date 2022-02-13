@@ -118,7 +118,7 @@ async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) 
         embeds: [embeds[current].setTitle(`Currently on page ${current + 1} of ${embeds.length}`)],
         components: row(false),
         fetchReply: true,
-        ephemeral: ephemeral,
+        ephemeral
     }).catch(() => { throw new Error("Cannot send messages!") })
 
     const collector = curPage.createMessageComponentCollector({
@@ -137,10 +137,10 @@ async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) 
         if (current < 0) current = embeds.length - 1
         if (current >= embeds.length) current = 0
 
-        curPage.edit({
+        interaction.editReply({
             embeds: [embeds[current].setTitle(`Currently on page ${current + 1} of ${embeds.length}`)],
             ephemeral
-        }).catch(() => { });
+        }).catch((e) => { console.error(e) });
 
         collected.deferUpdate();
     })
