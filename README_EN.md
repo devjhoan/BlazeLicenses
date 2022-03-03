@@ -21,14 +21,11 @@ It has the ability to create, edit, delete, list and get information about a spe
 2. **Manage Products**    
 It has the ability to create, edit, delete, list and obtain information about a specific product.
 
-3. **Manage Users**     
-It allows you to create, edit and list the users that can manage the licenses and/or products, as well as generate api keys for them.
-
-4. **Get my licenses**    
+3. **Get my licenses**    
 The client can get their licenses with a simple `/self licenses` command if that user has one or more licenses associated with their Discord account they will be listed.
 
-5. **Api Keys**     
-It allows you to generate an api key for a user with the role `Administrator` said api key is used to validate the information of the requests.
+4. **Api Keys**     
+It allows you to configure an api key to be able to make requests to the api.
 
 ## Dependencies 🔗
 
@@ -51,21 +48,11 @@ npm install
 npm start
 ```
 
-## Users? Roles? 🤔
-
-**If you do not understand the system of roles/users, I will explain it to you below.**
-
-The users that can be created from the Discord bot are users with permissions to manage the licensing system.
-
-- **Role Administrator**   
-Users with this role can manage licenses, products, users and api keys.
-
-- **Role Moderator**    
-Users with this role are only allowed to manage licenses (create, edit, delete, list and get information about a specific license).
-
 ## To-Do 🚧
 
 - Cache system for licenses, products, api keys and users.
+- Add an option to be able to put a maximum date on a license.
+- Add support for hwid.
 
 ## Show your support 💙
 
