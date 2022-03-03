@@ -21,14 +21,11 @@ Tiene la capacidad de crear, editar, eliminar, listar y obtener información sob
 2. **Manejar Productos**    
 Tiene la capacidad de crear, editar, eliminar, listar y obtener información sobre un producto en específico.
 
-3. **Manejar Usuarios**     
-Te permite crear, editar y listar los usuarios que pueden manejar las licencias y/o los productos, así como también generar api keys para ellos.
-
 4. **Obtener mis licencias**    
 El cliente puede obtener sus licencias con un simple comando `/self licenses` si dicho usuario cuenta con una o más licencias asociadas a su cuenta de Discord se mostrarán en una lista.
 
 5. **Api Keys**     
-Te permite generar una api key para un usuario con el rol `Administrator` dicha api key se usa para validar la información de las peticiones.
+Te permite configurar una api key para poder hacer peticiones a la api.
 
 ## Dependencias 🔗
 
@@ -51,25 +48,13 @@ npm install
 npm start
 ```
 
-## Usuarios? Roles? 🤔
-
-**Si no entiendes el sistema de los roles/usuarios te lo voy a explicar a continuación.**
-
-Los usuarios que se pueden crear desde el bot de Discord, son usuarios con permisos para manejar el sistema de licencias.
-
-- **Role Administrador**   
-Los usuarios con este rol pueden manejar las licencias, productos, usuarios y api keys.
-
-- **Role Moderador**    
-Los usuarios con este rol solo tienen permitido manejar las licencias (crear, editar, eliminar, listar y obtener información sobre una licencia en específico).
-
 ## To-Do 🚧
 
 - Sistema de cache para las licencias, productos, api keys y usuarios.
 
-## Show your support 💙
+## Muestra tu apoyo 💙
 
-Give a ⭐️ if this project helped you!
+¡Dale un ⭐️ si este proyecto te ayudó!
 
 ## Licencia  📄
 **Blaze Licenses** esta licenciado bajo la [MIT License](https://github.com/DevJhoan/BlazeLicenses/blob/master/LICENSE)
