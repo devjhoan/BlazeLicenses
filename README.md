@@ -51,6 +51,8 @@ npm start
 ## To-Do 🚧
 
 - Sistema de cache para las licencias, productos, api keys y usuarios.
+- Agregar una opción para poder poner una fecha maxima a una licencia.
+- Agregar soporte para hwid.
 
 ## Muestra tu apoyo 💙
 
@@ -59,6 +61,6 @@ npm start
 ## Licencia  📄
 **Blaze Licenses** esta licenciado bajo la [MIT License](https://github.com/DevJhoan/BlazeLicenses/blob/master/LICENSE)
 
-This is not an official Discord product. It is not affiliated with nor endorsed by Discord Inc.
+Este no es un producto oficial de Discord. No está afiliado ni respaldado por Discord Inc.
 
 © 2022 - Jhoan M.
