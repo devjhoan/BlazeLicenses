@@ -21,10 +21,10 @@ Tiene la capacidad de crear, editar, eliminar, listar y obtener información sob
 2. **Manejar Productos**    
 Tiene la capacidad de crear, editar, eliminar, listar y obtener información sobre un producto en específico.
 
-4. **Obtener mis licencias**    
+3. **Obtener mis licencias**    
 El cliente puede obtener sus licencias con un simple comando `/self licenses` si dicho usuario cuenta con una o más licencias asociadas a su cuenta de Discord se mostrarán en una lista.
 
-5. **Api Keys**     
+4. **Api Keys**     
 Te permite configurar una api key para poder hacer peticiones a la api.
 
 ## Dependencias 🔗
