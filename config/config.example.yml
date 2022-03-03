@@ -23,6 +23,7 @@ ACTIVITY:
 
 LICENSES_CONFIG:
   WEB_PORT: 3000
+  API_KEY: "" # 42 character api key
   GENERAL_SETTINGS:
     TESTING_MODE: true
     VISIBLE_MESSAGES: false

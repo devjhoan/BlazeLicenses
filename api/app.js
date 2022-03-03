@@ -16,7 +16,6 @@ if (config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) hook = new WebhookClient({url: co
 // Models Mongoose
 const licenseModel = require('../models/licenseModel');
 const productsModel = require('../models/productsModel');
-const usersModel = require("../models/usersModel");
 
 // Routes
 app.post('/api/client/', async (req, res) => {
@@ -27,8 +26,7 @@ app.post('/api/client/', async (req, res) => {
 
     // Checking if the license is valid
     if (licensekey && product && version && authorization_key) {
-        const findAuthKey = await usersModel.findOne({ api_key: authorization_key });
-        if (!findAuthKey) {
+        if (!authorization_key === config.LICENSES_CONFIG.API_KEY) {
             return res.send({
                 "status_msg": "FAILED_AUTHENTICATION",
                 "status_overview": "failed",
@@ -40,7 +38,7 @@ app.post('/api/client/', async (req, res) => {
                 const license_db = await licenseModel.findOne({ licensekey });
                 if (license_db) {
                     if (license_db.product_name === product) {
-                        if (!license_db.ip_cap === 0) {
+                        if (license_db.ip_cap !== 0) {
                             if (license_db.ip_list.length >= license_db.ip_cap) {
                                 return res.send({
                                     "status_msg": "MAX_IP_CAP",
@@ -135,7 +133,7 @@ app.post('/api/client/', async (req, res) => {
         }
     } else {
         return res.send({
-            "status_msg": "FAILED_AUTHENTICATION",
+            "status_msg": "INVALID_REQUEST",
             "status_overview": "failed",
             "status_code": 400
         });
