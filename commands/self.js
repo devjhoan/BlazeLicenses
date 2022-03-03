@@ -6,6 +6,7 @@ module.exports = {
     name: "self",
     description: "Blaze Licenses",
     type: 'CHAT_INPUT',
+    permission: "SELF_LICENSES",
     options: [
         {
             name: "licenses",
@@ -21,10 +22,12 @@ module.exports = {
      */
     run: async (client, interaction, args) => {
         const [SubCommand] = args;
-        if(SubCommand == "licenses") {
+        if (!client.checkPermissions(interaction, "SELF_LICENSES")) return;
+        
+        if (SubCommand == "licenses") {
             // Get the licenses of the user
             const licenses = await licenseModel.find({ discord_id: interaction.user.id });
-            if(!licenses || licenses.length == 0) {
+            if (!licenses || licenses.length == 0) {
                 return interaction.reply({embeds: [
                     new MessageEmbed()
                         .setTitle("❌ No licenses found")
@@ -37,12 +40,12 @@ module.exports = {
             
             // Save in a array the licenses that were found
             let embeds = [];
-            for(let i = 0; i < licenses.length; i++) {
+            for (let i = 0; i < licenses.length; i++) {
                 const license = licenses[i];
 
                 // Map Ip-List
                 const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                if(ipList.length == 0) ipList.push("1: None");
+                if (ipList.length == 0) ipList.push("1: None");
 
                 // Send a message to the user that the license was removed
                 embeds.push(
@@ -65,8 +68,8 @@ module.exports = {
                 )
             };
 
-            if(embeds.length == 1) return interaction.reply({embeds, ephemeral: true});
-            paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s", true);
+            if (embeds.length == 1) return interaction.reply({embeds, ephemeral: true});
+            paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "15s", true);
         } 
     },
 };

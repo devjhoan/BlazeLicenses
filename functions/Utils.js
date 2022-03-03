@@ -1,87 +1,86 @@
-const { MessageActionRow, MessageButton, Message } = require("discord.js")
-const licenseModel = require("../models/licenseModel");
-const usersModel = require("../models/usersModel");
+const { Client, MessageActionRow, MessageButton, Message, CommandInteraction, Guild } = require("discord.js")
 const ms = require("ms")
 
-async function reloadPermissions(guild, client, debug = false) {
-    const CommandsArray = client.permissions;
-
-    const getAllCustomers = async () => {
-        const users = await licenseModel.find();
-        if(users?.length == 0) return [client.user.id];
-        return users.map(x => x.discord_id);
-    }
-
-    const getAllUsers = async () => {
-        const user = await usersModel.find();
-        if(user?.length == 0) return [client.user.id];
-        return user.map(x => x.user_id);
-    }
-
-    const getUsersAdmin = async () => {
-        const user = await usersModel.find({role: "admin"});
-        if(user?.length == 0) return [guild.ownerId];
-        const usersMap = user.map(x => x.user_id);
-        return usersMap;
-    }
-
-    const adminPerms  =  await getUsersAdmin();
-    const licenseAcc  =  await getAllUsers();
-    const customers   =  await getAllCustomers();
-    
-    await guild.commands.set(CommandsArray).then((cmd) => {
-        const getUsers = (command) => {
-            if(command == "self")          return guild.members.cache.filter(x => customers.includes(x.id));
-            else if(command == "license")  return guild.members.cache.filter(x => licenseAcc.includes(x.id));
-            else if(command == "product")  return guild.members.cache.filter(x => adminPerms.includes(x.id));
-            else if(command == "config")   return guild.members.cache.filter(x => adminPerms.includes(x.id));
-            else if(command == "users")    return guild.members.cache.filter(x => adminPerms.includes(x.id));
-        };
-
-        const fullPermissions = cmd.reduce((accumulator, x) => {
-            const users = getUsers(x.name);
-            if(!users) return accumulator
-
-            const permissions = users.reduce((a, v) => {
-                
-                return [
-                    ...a,
-                    {
-                        id: v.id,
-                        type: "USER",
-                        permission: true,
-                    },
-                    {
-                        id: guild.id,
-                        type: "ROLE",
-                        permission: false,
-                    }
-                ]
-            }, []);
-
-            return [
-                ...accumulator,
-                {
-                    id: x.id,
-                    permissions,
-                }
-            ]
-
-        }, [])
-        guild.commands.permissions.set({ fullPermissions }).then(() => {
-            if(debug) console.log("Permissions updated!");
-        });
+/**
+ * 
+ * @param {Guild} guild 
+ * @param {Client} client 
+ * @returns 
+ */
+async function loadPermissions(guild, client) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const commandsLoaded = [];
+            const CommandsArray = client.permissions;
+            await guild.commands.set(CommandsArray).then((cmd) => {
+                const fileCommands = client.commandsFile;
+                const getRoles = (command_name) => {
+                    const commandPermission = CommandsArray.find((x) => {
+                        return x.name === command_name;
+                    })?.permission || [];
+                    if (commandPermission.length > 0) commandsLoaded.push(command_name);
+                    else return false;
+        
+                    const arrayRoles = fileCommands.PERMISSIONS[commandPermission];
+                    return guild.roles.cache.filter(x => arrayRoles?.includes(x.id) || arrayRoles?.includes(x.name));
+                };
+        
+                const fullPermissions = cmd.reduce((accumulator, x) => {   
+                    const roles = getRoles(x.name);
+                    if (!roles) return accumulator;
+        
+                    const permissions = roles.reduce((a, v) => {
+                        return [
+                            ...a,
+                            {
+                                id: v.id,
+                                type: "ROLE",
+                                permission: true,
+                            },
+                            {
+                                id: guild.id,
+                                type: "ROLE",
+                                permission: false,
+                            }
+                        ]
+                    }, []);
+        
+                    return [
+                        ...accumulator,
+                        {
+                            id: x.id,
+                            permissions,
+                        }
+                    ]
+                }, []);
+                guild.commands.permissions.set({ fullPermissions }).then(() => {
+                    resolve(CommandsArray)
+                });
+            });
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
+/**
+ * 
+ * @param {CommandInteraction} interaction 
+ * @param {Array} emojis 
+ * @param {Array} embeds 
+ * @param {ms} timeout 
+ * @param {Boolean} ephemeral 
+ * @returns 
+ */
+
 async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) {
-    if(embeds.length <= 0) return interaction.reply({embeds: [
+    if (embeds.length <= 0) return interaction.reply({embeds: [
         new MessageEmbed()
             .setTitle("No embeds to paginate!")
             .setColor("RED")
     ]});
 
-    if(embeds.length == 1) return interaction.reply({embeds: [embeds[0]]});
+    if (embeds.length == 1) return interaction.reply({embeds: [embeds[0]]});
 
     let current = 0
     const row = (state) => [
@@ -124,8 +123,8 @@ async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) 
     const collector = curPage.createMessageComponentCollector({
         filter: (m) => m.user.id === interaction.member.id,
         componentType: "BUTTON",
-        time: ms(timeout)
-    })
+        time: ms(timeout),
+    });
 
     collector.on("collect", async (collected) => {
         if      (collected.customId === "btn1") current = 0
@@ -154,15 +153,6 @@ async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) 
     });
 }
 
-function generateApi(length = 48) {
-    const string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let api = "";
-    for(let i = 0; i < length; i++) {
-        api += string[Math.floor(Math.random() * string.length)];
-    }
-    return api;
-}
-
 function generateLicense (length = 25) {
     const strings = "ABCDEFGHIJKLMNIOPQRSTUVWXYZ0123456789";
     let license = "";
@@ -174,7 +164,7 @@ function generateLicense (length = 25) {
 }
 
 function cancelAsk(fetchMessage, answer, interaction) {
-    if(!answer) {
+    if (!answer) {
         interaction.editReply({embeds: [fetchMessage.embeds[0].setColor("RED")]})
         return true;
     } else {
@@ -183,9 +173,9 @@ function cancelAsk(fetchMessage, answer, interaction) {
 }
 
 async function ask(question, interaction, reply = true) {
-    if(reply) await interaction.reply(question);
-    if(!reply) await interaction.editReply(question);
+    if (reply) await interaction.reply(question);
     const message = await interaction.fetchReply();
+    if (!reply) await interaction.editReply(question);
     /**@type Message */
     let answer;
 
@@ -197,17 +187,47 @@ async function ask(question, interaction, reply = true) {
         answer = x.first();
     });
     answer.delete();
-    if(answer.content == "cancel") {
+    if (answer.content == "cancel") {
         return false;
     }
     return answer;
 }
+/**
+ * 
+ * @param {Array} array 
+ * @param {String} id 
+ * @param {String} style 
+ * @returns 
+ */
+
+async function countButtons(array, style = "SECONDARY") {
+    if (array.length > 10) {
+        return console.error("Too many buttons! Max 10 buttons!");
+    }
+    const components = [];
+    lastComponents = new MessageActionRow;
+    const emojis = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
+    for (let i = 0; i < array.length; i++) {
+        const productName = array[i].name;
+        const button = new MessageButton()
+            .setEmoji(emojis[i])
+            .setCustomId(productName)
+            .setStyle("SECONDARY");
+        lastComponents.addComponents(button);
+        if (lastComponents.components.length === 5) {
+            components.push(lastComponents)
+            lastComponents = new MessageActionRow();
+        };
+    };
+    if (lastComponents.components.length > 0) {components.push(lastComponents)};
+    return components;
+};
 
 module.exports = {
-    reloadPermissions,
     generateLicense,
     paginationEmbed,
-    generateApi,
+    loadPermissions,
+    countButtons,
     cancelAsk,
-    ask,
+    ask
 }

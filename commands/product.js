@@ -1,12 +1,12 @@
 const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const { paginationEmbed } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
-const usersModel = require("../models/usersModel");
 
 module.exports = {
     name: "product",
     description: "Blaze License",
     type: 'CHAT_INPUT',
+    permission: "PRODUCT",
     options: [
         {
             name: "create",
@@ -73,11 +73,11 @@ module.exports = {
      */
     run: async (client, interaction, args) => {
         // User Check
-        const user = await usersModel.findOne({user_id: interaction.user.id});
-        if(!user) client.noRegister(interaction);
-        
+        const vanish = client.config.LICENSES_CONFIG.GENERAL_SETTINGS.VISIBLE_MESSAGES || true;
+        if (!client.checkPermissions(interaction, "PRODUCT")) return;
+
         const [SubCommand] = args;
-        if(SubCommand == "create") {
+        if (SubCommand == "create") {
             // Options of the product
             const name = interaction.options.getString("name");
             const version = interaction.options.getString("version");
@@ -85,7 +85,7 @@ module.exports = {
 
             // Check if the product already exists
             const check = await productModel.findOne({ name: name });
-            if(check) return interaction.reply(`🚫 that product already exists!`);
+            if (check) return interaction.reply(`🚫 that product already exists!`);
 
             // Create the product
             const product = new productModel({
@@ -111,14 +111,14 @@ module.exports = {
                 .setFooter({text: "Blaze License"})
                 .setColor("AQUA")
                 .setTimestamp()
-            ]});
-        } else if(SubCommand == "edit") {
+            ], ephemeral: vanish});
+        } else if (SubCommand == "edit") {
             // Options of the subcommand
             const name = interaction.options.getString("name");
 
             // Check if the product already exists
             const product = await productModel.findOne({ name: name });
-            if(!product) return interaction.reply(`🚫 that product doesn't exist!`);
+            if (!product) return interaction.reply(`🚫 that product doesn't exist!`);
 
             // Components for the embed (buttons)
             const row = new MessageActionRow().addComponents(
@@ -156,13 +156,13 @@ module.exports = {
                     .setFooter({text: "Blaze License"})
                     .setColor("AQUA")
                     .setTimestamp()
-            ], components: [row]});
+            ], components: [row], ephemeral: vanish});
 
             // Listen for the user to click on a button
             const msg = await interaction.fetchReply();
             const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === interaction.user.id && i.customId, time: 10000 })
             collector.on("collect", async (ints) => {
-                if(ints.customId == "edit_name") {
+                if (ints.customId == "edit_name") {
                     // Ask the user for the new name
                     const filter = (m) => m.author.id === interaction.user.id;
                     await interaction.editReply({embeds: [
@@ -180,7 +180,7 @@ module.exports = {
                                 // find if the product already exists
                                 val.first().delete();
                                 const check = await productModel.findOne({ name: val.first().content });
-                                if(check) return interaction.editReply(`${interaction.user}, that product already exists!`);
+                                if (check) return interaction.editReply(`${interaction.user}, that product already exists!`);
 
                                 // Update the name of the product
                                 await productModel.findOneAndUpdate({ name: name }, { name: val.first().content, updatedAt: new Date() });
@@ -200,7 +200,7 @@ module.exports = {
                             console.error(error);
                         }
                     })
-                } else if(ints.customId == "edit_version") {
+                } else if (ints.customId == "edit_version") {
                     // Ask the user for the new version
                     const filter = (m) => m.author.id === interaction.user.id;
                     await interaction.editReply({embeds: [
@@ -234,7 +234,7 @@ module.exports = {
                             console.error(error);
                         }
                     })
-                } else if(ints.customId == "edit_price") {
+                } else if (ints.customId == "edit_price") {
                     // Ask the user for the new price
                     const filter = (m) => m.author.id === interaction.user.id;
                     await interaction.editReply({embeds: [
@@ -268,7 +268,7 @@ module.exports = {
                             console.error(error);
                         }
                     })
-                } else if(ints.customId == "cancel") {
+                } else if (ints.customId == "cancel") {
                     interaction.editReply({embeds: [
                         new MessageEmbed()
                             .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
@@ -299,14 +299,14 @@ module.exports = {
                         .setTimestamp()
                 ], components: []});
             })
-        } else if(SubCommand == "list") {
+        } else if (SubCommand == "list") {
             // Get all the products
             const products = await productModel.find();
-            if(!products || products?.length == 0) return interaction.reply(`🚫 there are no products!`);
+            if (!products || products?.length == 0) return interaction.reply(`🚫 there are no products!`);
             let embeds = [];
 
             // Add the products to the embeds array
-            for(let i = 0; i < products.length; i++) {
+            for (let i = 0; i < products.length; i++) {
                 embeds.push(new MessageEmbed()
                     .setAuthor({ name: `License list`, iconURL: client.user.avatarURL() })
                     .addField("**Product name**", "```yaml\n" + products[i].name + "```")
@@ -321,15 +321,15 @@ module.exports = {
                     .setTimestamp()
                 );
             }
-            if(embeds.length == 1) return interaction.reply({embeds});
-            paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s");
-        } else if(SubCommand == "remove") {
+            if (embeds.length == 1) return interaction.reply({embeds});
+            paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s", vanish);
+        } else if (SubCommand == "remove") {
             // Options of the subcommand
             const name = interaction.options.getString("name");
 
             // Check if the product already exists
             const check = await productModel.findOne({ name: name });
-            if(!check) return interaction.reply(`🚫 **${name}** doesn't exist!`);
+            if (!check) return interaction.reply(`🚫 **${name}** doesn't exist!`);
 
             // Delete the product
             await productModel.findOneAndDelete({ name: name });
@@ -345,7 +345,7 @@ module.exports = {
                 .setFooter({text: "Blaze License"})
                 .setColor("AQUA")
                 .setTimestamp()
-            ]});
+            ], ephemeral: vanish});
         }
     },
 };

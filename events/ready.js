@@ -2,11 +2,11 @@ const client = require("../index");
 const ms = require("ms");
 
 client.on("ready", async () => {
-    if(client.config.ACTIVITY.ENABLED) {
+    if (client.config.ACTIVITY.ENABLED) {
         let pos = 0;
         async function nextStatus() {
             let status;
-            if(pos > client.config.ACTIVITY.ACTIVITIES.length - 1) pos = 0;
+            if (pos > client.config.ACTIVITY.ACTIVITIES.length - 1) pos = 0;
             status = client.config.ACTIVITY.ACTIVITIES[pos];
             pos++;
             if (Array.isArray(status)) {

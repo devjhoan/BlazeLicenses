@@ -1,0 +1,32 @@
+##########################################
+#              Bot Config                #
+##########################################
+
+BOT_CONFIG:
+  MONGO_URI: "mongo uri here"
+  TOKEN: "bot token here"
+  GUILD_ID: "server id here"
+
+##########################################
+#            Activity Config             #
+##########################################
+
+ACTIVITY:
+  ENABLED: true
+  ACTIVITIES:
+    - ["PLAYING", "Strider Development"]
+  INTERVAL: "12h"
+
+##########################################
+#            Licenses Config             #
+##########################################
+
+LICENSES_CONFIG:
+  WEB_PORT: 3000
+  GENERAL_SETTINGS:
+    TESTING_MODE: true
+    VISIBLE_MESSAGES: false
+  LOG_SYSTEM:
+    ENABLED: false
+    WEBHOOK_URL: "WEBHOOK_URL"
+    WEBHOOK_IMAGE: "WEBHOOK_IMAGE"

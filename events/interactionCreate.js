@@ -18,6 +18,6 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         interaction.member = interaction.guild.members.cache.get(interaction.user.id);
-        if(command) command.run(client, interaction, args);        
+        if (command) command.run(client, interaction, args);        
     }
 });

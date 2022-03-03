@@ -1,0 +1,7 @@
+PERMISSIONS:
+  LICENSE:
+    - "License"
+  PRODUCT:
+    - "Owner"
+  SELF_LICENSES:
+    - "Customer"
