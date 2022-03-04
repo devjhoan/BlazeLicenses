@@ -66,3 +66,94 @@ try {
     process.exit(1)
 }
 ```
+
+### Java
+
+## Libs
+```xml
+    </dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
+    </dependencies>
+```
+
+```java
+/*
+   * Author: _xDani_
+   * Date: 04/03/2022
+   * For BlazeLicenses
+*/
+
+@RequiredArgsConstructor
+@Getter
+public class License {
+
+    private final URI host;
+    private final String licenseKey;
+    private final String product;
+    private final String version;
+    private final String apiKey;
+
+    private int statusCode;
+    private String discordName;
+    private String discordID;
+    private String statusMsg;
+
+    public boolean check() {
+        HttpPost post = new HttpPost(host);
+
+        // add request parameter, form parameters
+        List<NameValuePair> urlParameters = new ArrayList<>();
+        urlParameters.add(new BasicNameValuePair("licensekey", licenseKey));
+        urlParameters.add(new BasicNameValuePair("product", product));
+        urlParameters.add(new BasicNameValuePair("version", version));
+
+        try {
+            post.setEntity(new UrlEncodedFormEntity(urlParameters));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        post.setHeader("Authorization", apiKey);
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault(); CloseableHttpResponse response = httpClient.execute(post)) {
+            String data = EntityUtils.toString(response.getEntity());
+            JSONObject obj = new JSONObject(data);
+            if(!obj.has("status_msg") || !obj.has("status_id")) {
+                return false;
+            }
+
+            statusCode = obj.getInt("status_code");
+            statusMsg = obj.getString("status_msg");
+
+            if(obj.getString("status_overview") == null){
+                return false;
+            }
+
+            discordName = obj.getString("discord_username");
+            discordID = obj.getString("discord_id");
+
+            return true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
+
+```
