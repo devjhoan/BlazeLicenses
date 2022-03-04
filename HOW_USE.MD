@@ -144,7 +144,7 @@ public class License {
                 return false;
             }
 
-            discordName = obj.getString("discord_username");
+            discordName = obj.getString("clientname"); // You can set discord_username too!
             discordID = obj.getString("discord_id");
 
             return true;
