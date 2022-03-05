@@ -98,7 +98,7 @@ app.post('/api/client/', async (req, res) => {
                                 ]})
                             };
                         } catch (error) {
-                            logger.error(error);
+                            console.errror(error);
                         }
 
                         return res.send({
@@ -135,7 +135,7 @@ app.post('/api/client/', async (req, res) => {
                             ]});
                         }
                     } catch (error) {
-                        logger.error(error);
+                        console.errror(error);
                     }
                     return res.send({
                         "status_msg": "INVALID_LICENSEKEY",
