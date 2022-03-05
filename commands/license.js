@@ -1,5 +1,5 @@
 const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu, WebhookClient } = require("discord.js");
-const { generateLicense, paginationEmbed, ask, cancelAsk, countButtons } = require("../functions/Utils");
+const { generateLicense, paginationEmbed, ask, cancelAsk, countButtons, makeLicenseEmbed } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
 const licenseModel = require("../models/licenseModel");
 
@@ -325,32 +325,8 @@ module.exports = {
             // Add the license to the embeds array
             for (let i = 0; i < licenses.length; i++) {
                 const license = licenses[i];
-
-                const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                if (ipList.length == 0) ipList.push("1: None");
-
-                const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                if (hwidList.length == 0) hwidList.push("1: None");
-
-                embeds.push(new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                    .addField("**Client name**", license.clientname, true)
-                    .addField("**Discord id**", license.discord_id, true)
-                    .addField("**Discord username**", license.discord_username, true)
-                    .addField("**Product**", license.product_name, true)
-                    .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                    .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                    .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                    .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                    .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                    .addField("**Created at**", `<t:${(licenses[i].createdAt / 1000 | 0)}:R>`, true)
-                    .addField("**Updated at**", `<t:${(licenses[i].updatedAt / 1000 | 0)}:R>`, true)
-                    .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                    .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("AQUA")
-                    .setTimestamp()
+                embeds.push(
+                    makeLicenseEmbed(license, interaction)
                 );
             }
             if (embeds.length == 1) return interaction.reply({embeds});
@@ -375,60 +351,11 @@ module.exports = {
             // Remove the license
             await licenseModel.findOneAndDelete({licensekey: license_key});
 
-            // Map Ip-List
-            const ipList = check.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-            if (ipList.length == 0) ipList.push("1: None");
-
-            // Map Hwid-List
-            const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-            if (hwidList.length == 0) hwidList.push("1: None");
-
             // Send a message to the user that the license was removed
-            interaction.editReply({embeds: [
-                new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .setTitle("**✅ License removed!**")
-                    .addField("**License key**", "```yaml\n" + license_key + "```")
-                    .addField("**Client name**", check.clientname, true)
-                    .addField("**Discord id**", check.discord_id, true)
-                    .addField("**Discord username**", check.discord_username, true)
-                    .addField("**Product**", check.product_name, true)
-                    .addField("**Created by**", check.created_by ? check.created_by : "none", true)
-                    .addField("**IP-Cap**", `${check.ip_list.length}/${check.ip_cap}`, true)
-                    .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                    .addField("**Latest IP**", check.latest_ip ? check.latest_ip : "none", true)
-                    .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                    .addField("**Created at**", `<t:${(check.createdAt / 1000 | 0)}:R>`, true)
-                    .addField("**Updated at**", `<t:${(check.updatedAt / 1000 | 0)}:R>`, true)
-                    .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                    .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("AQUA")
-                    .setTimestamp()
-            ]}).then(() => {
+            interaction.editReply({embeds: [makeLicenseEmbed(check, interaction, "**✅ License removed!**")]}).then(() => {
                 if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
                     const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
-                    webhook.send({embeds: [
-                        new MessageEmbed()
-                            .setAuthor({ name: `Removed by: ${interaction.user.id}`, iconURL: interaction.user.avatarURL() })
-                            .setTitle("**✅ License removed!**")
-                            .addField("**License key**", "```yaml\n" + license_key + "```")
-                            .addField("**Client name**", check.clientname, true)
-                            .addField("**Discord id**", check.discord_id, true)
-                            .addField("**Discord username**", check.discord_username, true)
-                            .addField("**Product**", check.product_name, true)
-                            .addField("**Created by**", check.created_by ? check.created_by : "none", true)
-                            .addField("**IP-Cap**", `${check.ip_list.length}/${check.ip_cap}`, true)
-                            .addField("**Latest IP**", check.latest_ip ? check.latest_ip : "none", true)
-                            .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                            .addField("**Created at**", `<t:${(check.createdAt / 1000 | 0)}:R>`, true)
-                            .addField("**Updated at**", `<t:${(check.updatedAt / 1000 | 0)}:R>`, true)
-                            .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                            .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                            .setFooter({text: "Blaze Licenses"})
-                            .setColor("AQUA")
-                            .setTimestamp()
-                    ]});
+                    webhook.send({embeds: [makeLicenseEmbed(check, interaction, "**✅ License removed!**")]});
                 }
             });
         } else if (SubCommand === "get") {
@@ -441,37 +368,8 @@ module.exports = {
                 const license = await licenseModel.findOne(value ? {$or: [{clientname: value}, {product_name: value}, {discord_id: value}, {discord_username: value}, {latest_ip: value}, {licensekey: value}]} : {});
                 if (!license) return interaction.reply(`🚫 license with the ${value} does not exist!`);
 
-                // Map Ip-List
-                const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                if (ipList.length == 0) ipList.push("1: None");
-
-                // Map Hwid-List
-                const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                if (hwidList.length == 0) hwidList.push("1: None");
-
                 // Send a message to the user that the license was removed
-                interaction.reply({embeds: [
-                    new MessageEmbed()
-                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                        .setTitle("**✅ License found!**")
-                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                        .addField("**Client name**", license.clientname, true)
-                        .addField("**Discord id**", license.discord_id, true)
-                        .addField("**Discord username**", license.discord_username, true)
-                        .addField("**Product**", license.product_name, true)
-                        .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                        .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                        .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                        .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                        .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                        .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                        .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                        .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                        .setFooter({text: "Blaze Licenses"})
-                        .setColor("AQUA")
-                        .setTimestamp()
-                ], ephemeral: vanish})
+                interaction.reply({embeds: [makeLicenseEmbed(license, interaction, "**✅ License found**")], ephemeral: vanish})
             } else if (mode == "loose") {
                 // Get the license
                 const licenses = await licenseModel.find(value ? {$or: [{clientname: value}, {product_name: value}, {discord_id: value}, {discord_username: value}, {latest_ip: value}, {licensekey: value}]} : {});
@@ -481,36 +379,9 @@ module.exports = {
                 // Save in a array the licenses that were found
                 for (let i = 0; i < licenses.length; i++) {
                     const license = licenses[i];
-
-                    // Map Ip-List
-                    const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                    if (ipList.length == 0) ipList.push("1: None");
-
-                    // Map Hwid-List
-                    const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                    if (hwidList.length == 0) hwidList.push("1: None");
-
                     // Send a message to the user that the license was removed
                     embeds.push(
-                        new MessageEmbed()
-                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                            .addField("**Client name**", license.clientname, true)
-                            .addField("**Discord id**", license.discord_id, true)
-                            .addField("**Discord username**", license.discord_username, true)
-                            .addField("**Product**", license.product_name, true)
-                            .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                            .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                            .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                            .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                            .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                            .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                            .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                            .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                            .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                            .setFooter({text: "Blaze Licenses"})
-                            .setColor("AQUA")
-                            .setTimestamp()
+                        makeLicenseEmbed(license, interaction)
                     )
                 };
 
@@ -525,14 +396,6 @@ module.exports = {
             const license = await licenseModel.findOne({licensekey: value});
             if (!license) return interaction.reply(`🚫 license \`${value}\` does not exist!`);
 
-            // Map Ip-List
-            const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-            if (ipList.length == 0) ipList.push("1: None");
-
-            // Map Hwid-List
-            const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-            if (hwidList.length == 0) hwidList.push("1: None");
-
             const buttons = new MessageActionRow().addComponents(
                 new MessageButton()
                     .setLabel("Clear IP's")
@@ -546,26 +409,7 @@ module.exports = {
                     .setCustomId("clearhwid")
             )
 
-            await interaction.reply({embeds: [
-                new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                    .addField("**Client name**", license.clientname, true)
-                    .addField("**Discord id**", license.discord_id, true)
-                    .addField("**Discord username**", license.discord_username, true)
-                    .addField("**Product**", license.product_name, true)
-                    .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                    .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                    .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                    .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                    .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                    .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                    .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                    .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("AQUA")
-                    .setTimestamp()
-            ], ephemeral: vanish, components: [buttons]});
+            await interaction.reply({embeds: [makeLicenseEmbed(license, interaction)], ephemeral: vanish, components: [buttons]});
 
             // Listen for the user to click on a button
             const msg = await interaction.fetchReply();
@@ -576,53 +420,13 @@ module.exports = {
                 if (button === "clearip") {
                     await license.updateOne({ip_list: []});
 
-                    interaction.editReply({embeds:  [
-                        new MessageEmbed()
-                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .setTitle("**✅ License ip's cleared!**")
-                            .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                            .addField("**Client name**", license.clientname, true)
-                            .addField("**Discord id**", license.discord_id, true)
-                            .addField("**Discord username**", license.discord_username, true)
-                            .addField("**Product**", license.product_name, true)
-                            .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                            .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                            .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                            .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                            .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                            .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                            .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                            .addField("**IP-list**", "```yaml\n1: None```", false)
-                            .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                            .setFooter({text: "Blaze Licenses"})
-                            .setColor("AQUA")
-                            .setTimestamp()
-                    ], components: []})
+                    const newLicense = await licenseModel.findOne({licensekey: value});
+                    interaction.editReply({embeds:  [makeLicenseEmbed(newLicense, interaction, "**✅ License IP's cleared**")], components: []})
                 } else if (button === "clearhwid") {
                     await license.updateOne({hwid_list: []});
 
-                    interaction.editReply({embeds:  [
-                        new MessageEmbed()
-                            .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .setTitle("**✅ License hwid's cleared!**")
-                            .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                            .addField("**Client name**", license.clientname, true)
-                            .addField("**Discord id**", license.discord_id, true)
-                            .addField("**Discord username**", license.discord_username, true)
-                            .addField("**Product**", license.product_name, true)
-                            .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                            .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                            .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                            .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                            .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                            .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                            .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                            .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                            .addField("**Hwid-list**", "```yaml\n1: None```", false)
-                            .setFooter({text: "Blaze Licenses"})
-                            .setColor("AQUA")
-                            .setTimestamp()
-                    ], components: []})
+                    const newLicense = await licenseModel.findOne({licensekey: value});
+                    interaction.editReply({embeds:  [makeLicenseEmbed(newLicense, interaction, "**✅ License HWID's cleared**")], components: []})
                 }
             });
 
@@ -634,14 +438,6 @@ module.exports = {
             // Check if the license already exists
             const license = await licenseModel.findOne({licensekey: value});
             if (!license) return interaction.reply(`🚫 license \`${value}\` does not exist!`);
-
-            // Map Ip-List
-            const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-            if (ipList.length == 0) ipList.push("1: None");
-
-            // Map Hwid-List
-            const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-            if (hwidList.length == 0) hwidList.push("1: None");
 
             // Component fot the embed (buttons)
             const row = new MessageActionRow().addComponents(
@@ -673,27 +469,7 @@ module.exports = {
             )
 
             // Send a message to the user with the license info to edit
-            await interaction.reply({embeds: [
-                new MessageEmbed()
-                    .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                    .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                    .addField("**Client name**", license.clientname, true)
-                    .addField("**Discord id**", license.discord_id, true)
-                    .addField("**Discord username**", license.discord_username, true)
-                    .addField("**Product**", license.product_name, true)
-                    .addField("**Created by**", license.created_by ? license.created_by : "none", true)
-                    .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
-                    .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
-                    .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
-                    .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
-                    .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
-                    .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                    .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                    .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                    .setFooter({text: "Blaze Licenses"})
-                    .setColor("AQUA")
-                    .setTimestamp()
-            ], components: [row], ephemeral: vanish});
+            await interaction.reply({embeds: [makeLicenseEmbed(license, interaction)], components: [row], ephemeral: vanish});
 
             // Listen for the user to click on a button
             const msg = await interaction.fetchReply();
@@ -730,56 +506,12 @@ module.exports = {
                                 await license.save();
 
                                 const newLicense = await licenseModel.findOne({licensekey: value});
-                                const ip_list = newLicense.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                                if (ip_list.length == 0) ip_list.push("1: None");
 
                                 await interaction.fetchReply();
-                                interaction.editReply({embeds: [
-                                    new MessageEmbed()
-                                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                        .setTitle("**✅ License updated!**")
-                                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                        .addField("**Client name**", newLicense.clientname, true)
-                                        .addField("**Discord id**", newLicense.discord_id, true)
-                                        .addField("**Discord username**", newLicense.discord_username, true)
-                                        .addField("**Product**", newLicense.product_name, true)
-                                        .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                        .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                        .addField("**Hwid-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                        .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                        .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                        .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                        .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                        .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                        .setFooter({text: "Blaze Licenses"})
-                                        .setColor("AQUA")
-                                        .setTimestamp()
-                                ]}).then((msg) => {
+                                interaction.editReply({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated**")]}).then((msg) => {
                                     if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
                                         const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
-                                        webhook.send({embeds: [
-                                            new MessageEmbed()
-                                                .setAuthor({ name: `Request by ${interaction.user.id}`, iconURL: interaction.user.avatarURL() })
-                                                .setTitle("**✅ License updated!**")
-                                                .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                                .addField("**Client name**", newLicense.clientname, true)
-                                                .addField("**Discord id**", newLicense.discord_id, true)
-                                                .addField("**Discord username**", newLicense.discord_username, true)
-                                                .addField("**Product**", newLicense.product_name, true)
-                                                .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                                .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                                .addField("**Hwid-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                                .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                                .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                                .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                                .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                                .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                                .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                                .setFooter({text: "Blaze Licenses"})
-                                                .setColor("AQUA")
-                                                .setTimestamp()
-                                        ]});
+                                        webhook.send({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated**")]});
                                     }
                                 })
                             });
@@ -829,55 +561,11 @@ module.exports = {
                                 await license.save();
 
                                 const newLicense = await licenseModel.findOne({licensekey: value});
-                                const ip_list = newLicense.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                                if (ip_list.length == 0) ip_list.push("1: None");
 
-                                interaction.editReply({embeds: [
-                                    new MessageEmbed()
-                                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                        .setTitle("**✅ License updated!**")
-                                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                        .addField("**Client name**", newLicense.clientname, true)
-                                        .addField("**Discord id**", newLicense.discord_id, true)
-                                        .addField("**Discord username**", newLicense.discord_username, true)
-                                        .addField("**Product**", newLicense.product_name, true)
-                                        .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                        .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                        .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                        .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                        .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                        .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                        .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                        .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                        .setFooter({text: "Blaze Licenses"})
-                                        .setColor("AQUA")
-                                        .setTimestamp()
-                                ]}).then((msg) => {
+                                interaction.editReply({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]}).then((msg) => {
                                     if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
                                         const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
-                                        webhook.send({embeds: [
-                                            new MessageEmbed()
-                                                .setAuthor({ name: `Updated by: ${interaction.user.id}`, iconURL: interaction.user.avatarURL() })
-                                                .setTitle("**✅ License updated!**")
-                                                .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                                .addField("**Client name**", newLicense.clientname, true)
-                                                .addField("**Discord id**", newLicense.discord_id, true)
-                                                .addField("**Discord username**", newLicense.discord_username, true)
-                                                .addField("**Product**", newLicense.product_name, true)
-                                                .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                                .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                                .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                                .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                                .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                                .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                                .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                                .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                                .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                                .setFooter({text: "Blaze Licenses"})
-                                                .setColor("AQUA")
-                                                .setTimestamp()
-                                        ]});
+                                        webhook.send({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]});
                                     }
                                 })
                             });
@@ -956,59 +644,10 @@ module.exports = {
 
                         const newLicense = await licenseModel.findOne({licensekey: value});
 
-                        const ip_list = newLicense.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                        if (ip_list.length == 0) ip_list.push("1: None");
-
-                        // Map Hwid-List
-                        const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                        if (hwidList.length == 0) hwidList.push("1: None");
-
-                        interaction.editReply({embeds: [
-                            new MessageEmbed()
-                                .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                .setTitle("**✅ License updated!**")
-                                .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                .addField("**Client name**", newLicense.clientname, true)
-                                .addField("**Discord id**", newLicense.discord_id, true)
-                                .addField("**Discord username**", newLicense.discord_username, true)
-                                .addField("**Product**", newLicense.product_name, true)
-                                .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                .addField("**IP-list**", "```yaml\n"+ ip_list.join("\n").toString() +"```", false)
-                                .addField("**HWID-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                .setFooter({text: "Blaze Licenses"})
-                                .setColor("AQUA")
-                                .setTimestamp()
-                        ], components: []}).then((msg) => {
+                        interaction.editReply({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")], components: []}).then((msg) => {
                             if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
                                 const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
-                                webhook.send({embeds: [
-                                    new MessageEmbed()
-                                        .setAuthor({ name: `Update by: ${interaction.user.id}`, iconURL: interaction.user.avatarURL() })
-                                        .setTitle("**✅ License updated!**")
-                                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                        .addField("**Client name**", newLicense.clientname, true)
-                                        .addField("**Discord id**", newLicense.discord_id, true)
-                                        .addField("**Discord username**", newLicense.discord_username, true)
-                                        .addField("**Product**", newLicense.product_name, true)
-                                        .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                        .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                        .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                        .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                        .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                        .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                        .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                        .addField("**IP-list**", "```yaml\n"+ ip_list.join("\n").toString() +"```", false)
-                                        .addField("**HWID-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                        .setFooter({text: "Blaze Licenses"})
-                                        .setColor("AQUA")
-                                        .setTimestamp()
-                                ]});
+                                webhook.send({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]});
                             }
                         });
                     });
@@ -1035,59 +674,10 @@ module.exports = {
 
                                 const newLicense = await licenseModel.findOne({licensekey: value});
 
-                                const ipList = newLicense.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                                if (ipList.length == 0) ipList.push("1: None");
-
-                                // Map Hwid-List
-                                const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                                if (hwidList.length == 0) hwidList.push("1: None");
-
-                                interaction.editReply({embeds: [
-                                    new MessageEmbed()
-                                        .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                        .setTitle("**✅ License updated!**")
-                                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                        .addField("**Client name**", newLicense.clientname, true)
-                                        .addField("**Discord id**", newLicense.discord_id, true)
-                                        .addField("**Discord username**", newLicense.discord_username, true)
-                                        .addField("**Product**", newLicense.product_name, true)
-                                        .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                        .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                        .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                        .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                        .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                        .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                        .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                        .addField("**HWID-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                        .setFooter({text: "Blaze Licenses"})
-                                        .setColor("AQUA")
-                                        .setTimestamp()
-                                ]}).then((msg) => {
+                                interaction.editReply({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]}).then((msg) => {
                                     if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
                                         const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
-                                        webhook.send({embeds: [
-                                            new MessageEmbed()
-                                                .setAuthor({ name: `Updated by: ${interaction.user.id}`, iconURL: interaction.user.avatarURL() })
-                                                .setTitle("**✅ License updated!**")
-                                                .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                                .addField("**Client name**", newLicense.clientname, true)
-                                                .addField("**Discord id**", newLicense.discord_id, true)
-                                                .addField("**Discord username**", newLicense.discord_username, true)
-                                                .addField("**Product**", newLicense.product_name, true)
-                                                .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                                .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                                .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                                .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                                .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                                .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                                .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                                .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                                .addField("**HWID-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                                .setFooter({text: "Blaze Licenses"})
-                                                .setColor("AQUA")
-                                                .setTimestamp()
-                                        ]});
+                                        webhook.send({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]});
                                     }
                                 })
                             })
@@ -1111,43 +701,20 @@ module.exports = {
                             await msg.channel.awaitMessages({ filter: filter, max: 1 }).then(async (val) => {
                                 val.first().delete();
                                 const hwid_cap = val.first().content;
+                                
                                 if (hwid_cap.toLowerCase() == "none") license.hwid_cap = 0;
                                 else license.hwid_cap = parseInt(hwid_cap);
-                                
                                 license.updatedAt = Date.now();
+
                                 await license.save();
 
                                 const newLicense = await licenseModel.findOne({licensekey: value});
-
-                                const ipList = newLicense.ip_list.map((ip, i) => `${i+1}: ${ip}`)
-                                if (ipList.length == 0) ipList.push("1: None");
-
-                                // Map Hwid-List
-                                const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
-                                if (hwidList.length == 0) hwidList.push("1: None");
-
-                                interaction.editReply({embeds: [
-                                    new MessageEmbed()
-                                        .setAuthor({ name: `Updated by: ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                                        .setTitle("**✅ License updated!**")
-                                        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
-                                        .addField("**Client name**", newLicense.clientname, true)
-                                        .addField("**Discord id**", newLicense.discord_id, true)
-                                        .addField("**Discord username**", newLicense.discord_username, true)
-                                        .addField("**Product**", newLicense.product_name, true)
-                                        .addField("**Created by**", newLicense.created_by ? newLicense.created_by : "none", true)
-                                        .addField("**IP-Cap**", `${newLicense.ip_list.length}/${newLicense.ip_cap}`, true)
-                                        .addField("**HWID-Cap**", `${newLicense.hwid_list.length}/${newLicense.hwid_cap}`, true)
-                                        .addField("**Latest IP**", newLicense.latest_ip ? newLicense.latest_ip : "none", true)
-                                        .addField("**Latest HWID**", newLicense.latest_hwid ? newLicense.latest_hwid : "none", true)
-                                        .addField("**Created at**", `<t:${(newLicense.createdAt / 1000 | 0)}:R>`, true)
-                                        .addField("**Updated at**", `<t:${(newLicense.updatedAt / 1000 | 0)}:R>`, true)
-                                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
-                                        .addField("**HWID-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
-                                        .setFooter({text: "Blaze Licenses"})
-                                        .setColor("AQUA")
-                                        .setTimestamp()
-                                ]});
+                                interaction.editReply({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]}).then((msg) => {
+                                    if (client.config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) {
+                                        const webhook = new WebhookClient({url: client.config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_URL});
+                                        webhook.send({embeds: [makeLicenseEmbed(newLicense, interaction, "**✅ License updated!**")]});
+                                    }
+                                });
                             });
                         } catch (error) {
                             console.error(error);
