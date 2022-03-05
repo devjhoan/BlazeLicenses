@@ -40,6 +40,7 @@ It allows you to configure an api key to be able to make requests to the api.
 To install the system, you must have a vps with the above requirements. (If you don't have a mongodb database, you can create one for free in [Mongo Atlas](https://www.mongodb.com/cloud/atlas).)
 
 Make sure you have **NodeJS v16+** installed.
+Remember to rename the file `config.example.yml` to `config.yml`
 
 ```sh
 git clone git@github.com:devjhoan/blazelicenses.git
@@ -50,7 +51,7 @@ npm start
 
 ## How do I make requests? 🤖
 I have made a file with several examples of how to use the license system in various programming languages
-Here is the link to the document [How to use?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE.MD)
+Here is the link to the document [How to use?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE_EN.MD)
 
 ## To-Do 🚧
 
