@@ -48,11 +48,18 @@ npm install
 npm start
 ```
 
+## How do I make requests? 🤖
+I have made a file with several examples of how to use the license system in various programming languages
+Here is the link to the document [How to use?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE.MD)
+
 ## To-Do 🚧
 
-- Cache system for licenses, products, api keys and users.
-- Add an option to be able to put a maximum date on a license.
-- Add support for hwid.
+- [ ] Cache system for licenses, products, api keys and users.
+- [ ] Add an option to be able to put a maximum date on a license.
+- [ ] Add support for hwid.
+
+## Support? 💁🏻
+If you don't understand something and/or want to ask something about the licensing system, you can enter our [Discord](https://strider.cloud)
 
 ## Show your support 💙
 
