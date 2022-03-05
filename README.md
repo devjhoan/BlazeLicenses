@@ -48,11 +48,17 @@ npm install
 npm start
 ```
 
-## To-Do 🚧
+## ¿Cómo hago las solicitudes? 🤖
+He hecho un archivo con varios ejemplos de cómo usar el sistema de licencias en varios lenguajes de programación
+Aquí está el enlace al documento [Cómo usar?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE.MD)
 
-- Sistema de cache para las licencias, productos, api keys y usuarios.
-- Agregar una opción para poder poner una fecha maxima a una licencia.
-- Agregar soporte para hwid.
+## To-Do 🚧
+- [ ] Sistema de cache para las licencias, productos, api keys y usuarios.
+- [ ] Agregar una opción para poder poner una fecha maxima a una licencia.
+- [ ] Agregar soporte para hwid.
+
+## Soporte? 💁🏻
+Si no entiendes algo y/o quieres preguntar algo sobre el sistema de licencias, puedes entrar a nuestro [Discord](https://strider.cloud)
 
 ## Muestra tu apoyo 💙
 
