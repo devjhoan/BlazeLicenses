@@ -52,6 +52,7 @@ module.exports = async (client) => {
         await loadPermissions(guild, client).then((x) => {
             console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
         }).catch((error) => {
+            console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
             console.log(chalk.red.bold('BOT ERROR━━━━━━━━━━━━━━━━━━━━━━━━━┓'));
             console.log(`${chalk.red.bold('┃')} ${error}`);
             console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));

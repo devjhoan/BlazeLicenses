@@ -40,6 +40,7 @@ Te permite configurar una api key para poder hacer peticiones a la api.
 Para instalar el sistema, se debe tener un vps con los requerimientos de arriba. (si no cuentas con una base de datos mongodb, puedes crear una gratis en [Mongo Atlas](https://www.mongodb.com/cloud/atlas).)
 
 Asegúrese de tener instalado **NodeJS v16+**.
+Recuerde cambiar el nombre del archivo `config.example.yml` a `config.yml`
 
 ```sh
 git clone git@github.com:devjhoan/blazelicenses.git
@@ -50,12 +51,12 @@ npm start
 
 ## ¿Cómo hago las solicitudes? 🤖
 He hecho un archivo con varios ejemplos de cómo usar el sistema de licencias en varios lenguajes de programación
-Aquí está el enlace al documento [Cómo usar?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE.MD)
+Aquí está el enlace al documento [Cómo usar?](https://github.com/DevJhoan/BlazeLicenses/blob/master/HOW_USE_ES.MD)
 
 ## To-Do 🚧
 - [ ] Sistema de cache para las licencias, productos, api keys y usuarios.
 - [ ] Agregar una opción para poder poner una fecha maxima a una licencia.
-- [ ] Agregar soporte para hwid.
+- [x] Agregar soporte para hwid.
 
 ## Soporte? 💁🏻
 Si no entiendes algo y/o quieres preguntar algo sobre el sistema de licencias, puedes entrar a nuestro [Discord](https://strider.cloud)

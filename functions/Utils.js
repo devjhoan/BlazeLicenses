@@ -1,4 +1,4 @@
-const { Client, MessageActionRow, MessageButton, Message, CommandInteraction, Guild } = require("discord.js")
+const { Client, MessageActionRow, MessageButton, Message, CommandInteraction, Guild, MessageEmbed } = require("discord.js")
 const ms = require("ms")
 
 /**
@@ -223,11 +223,51 @@ async function countButtons(array, style = "SECONDARY") {
     return components;
 };
 
+/**
+ * 
+ * @param {Object} license 
+ * @param {CommandInteraction} interaction 
+ * @param {String} title
+ * @returns 
+ */
+function makeLicenseEmbed(license, interaction, title) {
+    // IP-LIST 
+    const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
+    if (ipList.length == 0) ipList.push("1: None");
+
+    // HWID-LIST
+    const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
+    if (hwidList.length == 0) hwidList.push("1: None");
+
+    const embed = new MessageEmbed()
+        .setAuthor({ name: `Request by ${interaction.user.tag}`, iconURL: interaction.user.avatarURL() })
+        .addField("**License key**", "```yaml\n" + license.licensekey + "```")
+        .addField("**Client name**", license.clientname, true)
+        .addField("**Discord id**", license.discord_id, true)
+        .addField("**Discord username**", license.discord_username, true)
+        .addField("**Product**", license.product_name, true)
+        .addField("**Created by**", license.created_by ? license.created_by : "none", true)
+        .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
+        .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
+        .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
+        .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
+        .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
+        .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
+        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
+        .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
+        .setFooter({text: "Blaze Licenses"})
+        .setColor("AQUA")
+        .setTimestamp();
+    if (title) embed.setTitle(title);
+    return embed;
+}
+
 module.exports = {
     generateLicense,
     paginationEmbed,
     loadPermissions,
     countButtons,
     cancelAsk,
-    ask
+    ask,
+    makeLicenseEmbed
 }
