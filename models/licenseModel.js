@@ -8,7 +8,9 @@ const schema = new mongoose.Schema ({
     discord_username: String,
     discord_tag: String,
     ip_list: [Object],
+    hwid_list: [Object],
     ip_cap: Number,
+    hwid_cap: Number,
     total_requests: {
         type: Number,
         default: 0
@@ -17,6 +19,10 @@ const schema = new mongoose.Schema ({
     createdAt: Date,
     updatedAt: Date,
     latest_ip: {
+        type: String,
+        default: ""
+    },
+    latest_hwid: {
         type: String,
         default: ""
     }

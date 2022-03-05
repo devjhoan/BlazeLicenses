@@ -47,6 +47,10 @@ module.exports = {
                 const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
                 if (ipList.length == 0) ipList.push("1: None");
 
+                // Map Hwid-List
+                const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
+                if (hwidList.length == 0) hwidList.push("1: None");
+
                 // Send a message to the user that the license was removed
                 embeds.push(
                     new MessageEmbed()
@@ -58,10 +62,13 @@ module.exports = {
                         .addField("**Product**", license.product_name, true)
                         .addField("**Created by**", license.created_by ? license.created_by : "none", true)
                         .addField("**IP-Cap**", `${license.ip_list.length}/${license.ip_cap}`, true)
+                        .addField("**HWID-Cap**", `${license.hwid_list.length}/${license.hwid_cap}`, true)
                         .addField("**Latest IP**", license.latest_ip ? license.latest_ip : "none", true)
+                        .addField("**Latest HWID**", license.latest_hwid ? license.latest_hwid : "none", true)
                         .addField("**Created at**", `<t:${(license.createdAt / 1000 | 0)}:R>`, true)
                         .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
-                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", true)
+                        .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
+                        .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
                         .setFooter({text: "Blaze Licenses"})
                         .setColor("AQUA")
                         .setTimestamp()

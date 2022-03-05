@@ -20,7 +20,7 @@ const productsModel = require('../models/productsModel');
 // Routes
 app.post('/api/client/', async (req, res) => {
     // Importing variables
-    const { licensekey, product, version } = req.body;
+    const { licensekey, product, version, hwid } = req.body;
     const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
     const authorization_key = req.headers.authorization;
 
@@ -51,11 +51,29 @@ app.post('/api/client/', async (req, res) => {
                         if (!license_db.ip_list.includes(ip)) license_db.ip_list.push(ip);
                         if (license_db.latest_ip !== ip) license_db.latest_ip = ip;
 
+                        if (hwid) {
+                            if (license_db.hwid_cap !== 0) {
+                                if (license_db.hwid_list.length >= license_db.hwid_cap) {
+                                    return res.send({
+                                        "status_msg": "MAX_HWID_CAP",
+                                        "status_overview": "failed",
+                                        "status_code": 401 
+                                    });
+                                }
+                            }
+
+                            if (!license_db.hwid_list.includes(hwid)) license_db.hwid_list.push(hwid);
+                            if (license_db.latest_hwid !== hwid) license_db.latest_hwid = hwid;
+                        }
+
                         license_db.total_requests++;
                         await license_db.save();
 
                         const ip_list = license_db.ip_list.map((ip, i) => `${i + 1}: ${ip}`)
                         if (ip_list.length == 0) ip_list.push("1: None");
+
+                        const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
+                        if (hwidList.length == 0) hwidList.push("1: None");
 
                         try {
                             if (hook) {
@@ -64,16 +82,18 @@ app.post('/api/client/', async (req, res) => {
                                         .setAuthor({name: "Successful authentication", iconURL: config.LICENSES_CONFIG.LOG_SYSTEM.WEBHOOK_IMAGE})
                                         .setColor("GREEN")
                                         .addFields([
-                                            {name: "License Key", value: "```yaml\n" + licensekey + "```", inline: false},
-                                            {name: "Clientname", value: license_db.clientname, inline: true},
-                                            {name: "Discord ID", value: license_db.discord_id, inline: true},
-                                            {name: "Discord username", value: license_db.discord_username, inline: true},
-                                            {name: "Version", value: version.toString(), inline: true},
-                                            {name: "Product", value: product, inline: true},
-                                            {name: "Created by", value: license_db.created_by, inline: true},
-                                            {name: "Created at", value: `<t:${(license_db.createdAt / 1000 | 0)}:R>`, inline: true},
-                                            {name: "IP-cap", value: `${license_db.ip_list.length}/${license_db.ip_cap}`, inline: true},
-                                            {name: "IP-list", value: "```yaml\n" + ip_list.join("\n") + "```", inline: false},
+                                            { name: "License Key", value: "```yaml\n" + licensekey + "```", inline: false },
+                                            { name: "Clientname", value: license_db.clientname, inline: true },
+                                            { name: "Discord ID", value: license_db.discord_id, inline: true },
+                                            { name: "Discord username", value: license_db.discord_username, inline: true },
+                                            { name: "Version", value: version.toString(), inline: true },
+                                            { name: "Product", value: product, inline: true },
+                                            { name: "Created by", value: license_db.created_by, inline: true },
+                                            { name: "Created at", value: `<t:${(license_db.createdAt / 1000 | 0)}:R>`, inline: true },
+                                            { name: "IP-cap", value: `${license_db.ip_list.length}/${license_db.ip_cap}`, inline: true },
+                                            { name: "HWID-cap", value: `${license_db.hwid_list.length}/${license_db.hwid_cap}`, inline: true },
+                                            { name: "IP-list", value: "```yaml\n" + ip_list.join("\n") + "```", inline: false },
+                                            { name: "HWID-list", value: "```yaml\n" + hwidList.join("\n") + "```", inline: false },
                                         ])
                                 ]})
                             };
