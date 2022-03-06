@@ -21,7 +21,7 @@ const productsModel = require('../models/productsModel');
 app.post('/api/client/', async (req, res) => {
     // Importing variables
     const { licensekey, product, version, hwid } = req.body;
-    const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
+    const ip = (req.header('x-forwarded-for') || req.connection.remoteAddress).replace("::ffff:", "5");
     const authorization_key = req.headers.authorization;
 
     // Checking if the license is valid
@@ -48,8 +48,21 @@ app.post('/api/client/', async (req, res) => {
                             }
                         }
                         
-                        if (!license_db.ip_list.includes(ip)) license_db.ip_list.push(ip);
-                        if (license_db.latest_ip !== ip) license_db.latest_ip = ip;
+                        let ip_exists = false;
+                        for (let i = 0; i < license_db.ip_list.length; i++) {
+                            if (license_db.ip_list[i].ip === ip) {
+                                ip_exists = true;
+                            }
+                        }
+                        if (!ip_exists) {
+                            license_db.ip_list.push({
+                                ip: ip,
+                                created_at: new Date(),
+                            });
+                        }
+                        if (license_db.latest_ip !== ip) {
+                            license_db.latest_ip = ip;
+                        }
 
                         if (hwid) {
                             if (license_db.hwid_cap !== 0) {
@@ -62,17 +75,33 @@ app.post('/api/client/', async (req, res) => {
                                 }
                             }
 
-                            if (!license_db.hwid_list.includes(hwid)) license_db.hwid_list.push(hwid);
-                            if (license_db.latest_hwid !== hwid) license_db.latest_hwid = hwid;
+                            let hwid_exists = false;
+                            for (let i = 0; i < license_db.hwid_list.length; i++) {
+                                if (license_db.hwid_list[i].hwid === hwid) {
+                                    hwid_exists = true;
+                                }
+                            }
+                            if (!hwid_exists) {
+                                license_db.hwid_list.push({
+                                    hwid: hwid,
+                                    created_at: new Date(),
+                                });
+                            }
                         }
 
                         license_db.total_requests++;
                         await license_db.save();
 
-                        const ip_list = license_db.ip_list.map((ip, i) => `${i + 1}: ${ip}`)
+                        // IP-LIST
+                        const ip_list = license_db.ip_list.map((data, i) => {
+                            return `${i + 1}: ${data.ip}`;
+                        })
                         if (ip_list.length == 0) ip_list.push("1: None");
 
-                        const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
+                        // HWID-LIST
+                        const hwidList = license_db.hwid_list.map((data, i) => {
+                            return `${i+1}: ${data.hwid.substring(0, 40)}${data.hwid.length > 40 ? "..." : ""}`
+                        })
                         if (hwidList.length == 0) hwidList.push("1: None");
 
                         try {
@@ -98,7 +127,7 @@ app.post('/api/client/', async (req, res) => {
                                 ]})
                             };
                         } catch (error) {
-                            console.errror(error);
+                            console.error(error);
                         }
 
                         return res.send({
@@ -106,11 +135,11 @@ app.post('/api/client/', async (req, res) => {
                             "status_overview": "success",
                             "status_code": 200,
                             "status_id": "SUCCESS",
-                            "version": product_db.version.toString(),
-                            "clientname": license_db.clientname.toString(),
-                            "discord_username": license_db.discord_username.toString(),
-                            "discord_tag": license_db.discord_tag.toString(),
-                            "discord_id": license_db.discord_id.toString(),
+                            "version": product_db.version,
+                            "clientname": license_db.clientname,
+                            "discord_username": license_db.discord_username,
+                            "discord_tag": license_db.discord_tag,
+                            "discord_id": license_db.discord_id,
                         });
                     } else {
                         return res.send({
@@ -135,7 +164,7 @@ app.post('/api/client/', async (req, res) => {
                             ]});
                         }
                     } catch (error) {
-                        console.errror(error);
+                        console.error(error);
                     }
                     return res.send({
                         "status_msg": "INVALID_LICENSEKEY",
