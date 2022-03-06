@@ -232,11 +232,15 @@ async function countButtons(array, style = "SECONDARY") {
  */
 function makeLicenseEmbed(license, interaction, title) {
     // IP-LIST 
-    const ipList = license.ip_list.map((ip, i) => `${i+1}: ${ip}`)
+    const ipList = license.ip_list.map((data, i) => {
+        return `${i + 1}: ${data.ip}`;
+    });
     if (ipList.length == 0) ipList.push("1: None");
 
     // HWID-LIST
-    const hwidList = license.hwid_list.map((hwid, i) => `${i+1}: ${hwid.substring(0, 40)}${hwid.length > 40 ? "..." : ""}`)
+    const hwidList = license.hwid_list.map((data, i) => {
+        return `${i+1}: ${data.hwid.substring(0, 40)}${data.hwid.length > 40 ? "..." : ""}`
+    });
     if (hwidList.length == 0) hwidList.push("1: None");
 
     const embed = new MessageEmbed()

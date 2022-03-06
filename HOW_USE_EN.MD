@@ -28,6 +28,7 @@ try {
 	const product = 'PRODUCT_NAME';
 	const version = 'VERSION';
 	const api_key = 'API_KEY';
+    const hwid = 'PC_IDENTIFIER';
 
     const res = await axios.post(
    		url,
@@ -35,6 +36,7 @@ try {
    		    licensekey,
    		    product,
    		    version,
+            hwid
    		},
    		{ headers: { Authorization: api_key }}
 	);
@@ -107,6 +109,7 @@ public class License {
     private final String product;
     private final String version;
     private final String apiKey;
+    private final String hwid;
 
     private int statusCode;
     private String discordName;
@@ -121,6 +124,7 @@ public class License {
         urlParameters.add(new BasicNameValuePair("licensekey", licenseKey));
         urlParameters.add(new BasicNameValuePair("product", product));
         urlParameters.add(new BasicNameValuePair("version", version));
+        urlParameters.add(new BasicNameValuePair("hwid", hwid));
 
         try {
             post.setEntity(new UrlEncodedFormEntity(urlParameters));

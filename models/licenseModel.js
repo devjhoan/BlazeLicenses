@@ -7,8 +7,16 @@ const schema = new mongoose.Schema ({
     discord_id: String,
     discord_username: String,
     discord_tag: String,
-    ip_list: [Object],
-    hwid_list: [Object],
+    ip_list: [{
+        ip: String,
+        created_at: Date,
+        _id: false
+    }],
+    hwid_list: [{
+        hwid: String,
+        created_at: Date,
+        _id: false
+    }],
     ip_cap: Number,
     hwid_cap: Number,
     total_requests: {
