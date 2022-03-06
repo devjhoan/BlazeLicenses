@@ -21,7 +21,7 @@ const productsModel = require('../models/productsModel');
 app.post('/api/client/', async (req, res) => {
     // Importing variables
     const { licensekey, product, version, hwid } = req.body;
-    const ip = (req.header('x-forwarded-for') || req.connection.remoteAddress).replace("::ffff:", "5");
+    const ip = (req.header('x-forwarded-for') || req.connection.remoteAddress).replace("::ffff:", "");
     const authorization_key = req.headers.authorization;
 
     // Checking if the license is valid
@@ -39,7 +39,7 @@ app.post('/api/client/', async (req, res) => {
                 if (license_db) {
                     if (license_db.product_name === product) {
                         if (license_db.ip_cap !== 0) {
-                            if (license_db.ip_list.length >= license_db.ip_cap) {
+                            if (license_db.ip_list.length > license_db.ip_cap) {
                                 return res.send({
                                     "status_msg": "MAX_IP_CAP",
                                     "status_overview": "failed",
@@ -66,7 +66,7 @@ app.post('/api/client/', async (req, res) => {
 
                         if (hwid) {
                             if (license_db.hwid_cap !== 0) {
-                                if (license_db.hwid_list.length >= license_db.hwid_cap) {
+                                if (license_db.hwid_list.length > license_db.hwid_cap) {
                                     return res.send({
                                         "status_msg": "MAX_HWID_CAP",
                                         "status_overview": "failed",
