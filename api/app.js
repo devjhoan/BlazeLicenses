@@ -16,6 +16,7 @@ if (config.LICENSES_CONFIG.LOG_SYSTEM.ENABLED) hook = new WebhookClient({url: co
 // Models Mongoose
 const licenseModel = require('../models/licenseModel');
 const productsModel = require('../models/productsModel');
+const blacklistModel = require('../models/blacklistModel');
 
 // Routes
 app.post('/api/client/', async (req, res) => {
@@ -33,6 +34,17 @@ app.post('/api/client/', async (req, res) => {
                 "status_code": 400
             });
         } else {
+            const blacklist_db_ip = await blacklistModel.findOne({ type: "ip", blacklisted: ip });
+            if (blacklist_db_ip) {
+                res.send({
+                    "status_msg": "IP_BLACKLISTED",
+                    "status_overview": "failed",
+                    "status_code": 400
+                });
+
+                blacklist_db_ip.blocked_connections += 1;
+                return blacklist_db_ip.save();
+            }
             const product_db = await productsModel.findOne({ name: product });
             if (product_db) {
                 const license_db = await licenseModel.findOne({ licensekey });
@@ -65,6 +77,17 @@ app.post('/api/client/', async (req, res) => {
                         }
 
                         if (hwid) {
+                            const blacklist_db_hwid = await blacklistModel.findOne({ type: "hwid", blacklisted: hwid });
+                            if (blacklist_db_hwid) {
+                                res.send({
+                                    "status_msg": "BLACKLISTED_HWID",
+                                    "status_overview": "failed",
+                                    "status_code": 401
+                                });
+                                blacklist_db_hwid.blocked_connections++;
+                                return blacklist_db_hwid.save();
+                            }
+
                             if (license_db.hwid_cap !== 0) {
                                 if (license_db.hwid_list.length > license_db.hwid_cap) {
                                     return res.send({
@@ -100,7 +123,7 @@ app.post('/api/client/', async (req, res) => {
 
                         // HWID-LIST
                         const hwidList = license_db.hwid_list.map((data, i) => {
-                            return `${i+1}: ${data.hwid.substring(0, 40)}${data.hwid.length > 40 ? "..." : ""}`
+                            return `${i+1}:\n${data.hwid.substring(0, 40)}${data.hwid.length > 40 ? "..." : ""}`
                         })
                         if (hwidList.length == 0) hwidList.push("1: None");
 
@@ -124,6 +147,7 @@ app.post('/api/client/', async (req, res) => {
                                             { name: "IP-list", value: "```yaml\n" + ip_list.join("\n") + "```", inline: false },
                                             { name: "HWID-list", value: "```yaml\n" + hwidList.join("\n") + "```", inline: false },
                                         ])
+                                        .setImage("https://i.stack.imgur.com/Fzh0w.png")
                                 ]})
                             };
                         } catch (error) {

@@ -114,6 +114,7 @@ module.exports = {
                     .addField("**❯ Question [1/6]**", "To what product should this license key to be binded to? You need to give me a valid product name!")
                     .addField("**❯ Your products**", "```yaml\n" + i_name.join("\n") + "```")
                     .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                    .setImage("https://i.stack.imgur.com/Fzh0w.png")
                     .setFooter({text: "Blaze Licenses"})
                     .setTimestamp()
                     .setColor("AQUA")
@@ -142,6 +143,7 @@ module.exports = {
                             .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}` + "```")
                             .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                             .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                            .setImage("https://i.stack.imgur.com/Fzh0w.png")
                             .setFooter({text: "Blaze Licenses"})
                             .setTimestamp()
                             .setColor("AQUA")
@@ -157,6 +159,7 @@ module.exports = {
                             .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}` + "```")
                             .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                             .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                            .setImage("https://i.stack.imgur.com/Fzh0w.png")
                             .setFooter({text: "Blaze Licenses"})
                             .setTimestamp()
                             .setColor("AQUA")
@@ -175,6 +178,7 @@ module.exports = {
                             .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}` + "```")
                             .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                             .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                            .setImage("https://i.stack.imgur.com/Fzh0w.png")
                             .setFooter({text: "Blaze Licenses"})
                             .setTimestamp()
                             .setColor("AQUA")
@@ -194,6 +198,7 @@ module.exports = {
                             .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
                             .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                             .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                            .setImage("https://i.stack.imgur.com/Fzh0w.png")
                             .setFooter({text: "Blaze Licenses"})
                             .setTimestamp()
                             .setColor("AQUA")
@@ -210,10 +215,11 @@ module.exports = {
                     await interaction.editReply({embeds: [
                         new MessageEmbed()
                             .setAuthor({ name: `Request by ${interaction.user.username}`, iconURL: interaction.user.avatarURL() })
-                            .addField("**❯ Question [5/6]**", "Do you want to create this license key? true/false")
+                            .addField("**❯ Question [6/6]**", "Do you want to create this license key? true/false")
                             .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}\nHWID-Cap: ${hwid_cap}` + "```")
                             .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                             .addField("**❯ Attention**", "You can cancel this license creation any time via writing cancel to the chat. License creation will automatically timeout after 2 minutes from start.")
+                            .setImage("https://i.stack.imgur.com/Fzh0w.png")
                             .setFooter({text: "Blaze Licenses"})
                             .setTimestamp()
                             .setColor("AQUA")
@@ -246,6 +252,7 @@ module.exports = {
                                         .setTitle("**⚠ License is being created!**")
                                         .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}\nHWID-Cap: ${hwid_cap}` + "```")
                                         .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                                        .setImage("https://i.stack.imgur.com/Fzh0w.png")
                                         .setFooter({text: "Blaze Licenses"})
                                         .setTimestamp()
                                         .setColor("ORANGE")
@@ -275,6 +282,7 @@ module.exports = {
                                     .addField("**❯ License Info**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}\nHWID-Cap: ${hwid_cap}` + "```")
                                     .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                                     .addField("**❯ Created by**", interaction.user.tag)
+                                    .setImage("https://i.stack.imgur.com/Fzh0w.png")
                                     .setFooter({text: "Blaze Licenses"})
                                     .setTimestamp()
                                     .setColor("GREEN")
@@ -288,6 +296,7 @@ module.exports = {
                                                 .addField("**❯ License Info**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
                                                 .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
                                                 .addField("**❯ Created by**", interaction.user.tag)
+                                                .setImage("https://i.stack.imgur.com/Fzh0w.png")
                                                 .setFooter({text: "Blaze Licenses"})
                                                 .setTimestamp()
                                                 .setColor("GREEN")                                        
@@ -301,6 +310,7 @@ module.exports = {
                                         .setTitle("**❌ License creation canceled!**")
                                         .addField("**❯ Progress**", "```yaml\n" + `Product: ${product.name}\nClient name: ${clientName}\nDiscord id: ${discordId.id}\nIP-Cap: ${ip_cap}` + "```")
                                         .addField("**❯ License key**", "```yaml\n" + licenseKey + "```")
+                                        .setImage("https://i.stack.imgur.com/Fzh0w.png")
                                         .setFooter({text: "Blaze Licenses"})
                                         .setTimestamp()
                                         .setColor("RED")
@@ -329,7 +339,6 @@ module.exports = {
                     makeLicenseEmbed(license, interaction)
                 );
             }
-            if (embeds.length == 1) return interaction.reply({embeds});
             paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s", vanish);
         } else if (SubCommand === "remove") {
             // Options of the SubCommand

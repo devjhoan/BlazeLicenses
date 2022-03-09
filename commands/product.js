@@ -316,12 +316,12 @@ module.exports = {
                     .addField("**Price**", products[i].price.toString(), true)
                     .addField("**Created at**", `<t:${(products[i].createdAt / 1000 | 0).toString()}:R>`, true)
                     .addField("**Last updated at**", `<t:${(products[i].updatedAt / 1000 | 0).toString()}:R>`, true)
+                    .setImage("https://i.stack.imgur.com/Fzh0w.png")
                     .setFooter({text: "Blaze License"})
                     .setColor("AQUA")
                     .setTimestamp()
                 );
             }
-            if (embeds.length == 1) return interaction.reply({embeds});
             paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s", vanish);
         } else if (SubCommand == "remove") {
             // Options of the subcommand
@@ -342,6 +342,7 @@ module.exports = {
                 .addField("**❯ Product version:**", check.version.toString())
                 .addField("**❯ Total purchases:**", check.total_purchases.toString())
                 .addField("**❯ Created by:**", await client.users.fetch(check.created_by).then(user => user.tag))
+                .setImage("https://i.stack.imgur.com/Fzh0w.png")
                 .setFooter({text: "Blaze License"})
                 .setColor("AQUA")
                 .setTimestamp()

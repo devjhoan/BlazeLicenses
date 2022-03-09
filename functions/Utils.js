@@ -78,9 +78,9 @@ async function paginationEmbed(interaction, emojis, embeds, timeout, ephemeral) 
         new MessageEmbed()
             .setTitle("No embeds to paginate!")
             .setColor("RED")
-    ]});
+    ], ephemeral: ephemeral});
 
-    if (embeds.length == 1) return interaction.reply({embeds: [embeds[0]]});
+    if (embeds.length == 1) return interaction.reply({embeds: [embeds[0]], ephemeral});
 
     let current = 0
     const row = (state) => [
@@ -259,6 +259,7 @@ function makeLicenseEmbed(license, interaction, title) {
         .addField("**Updated at**", `<t:${(license.updatedAt / 1000 | 0)}:R>`, true)
         .addField("**IP-list**", "```yaml\n"+ ipList.join("\n").toString() +"```", false)
         .addField("**Hwid-list**", "```yaml\n"+ hwidList.join("\n").toString() +"```", false)
+        .setImage("https://i.stack.imgur.com/Fzh0w.png")
         .setFooter({text: "Blaze Licenses"})
         .setColor("AQUA")
         .setTimestamp();

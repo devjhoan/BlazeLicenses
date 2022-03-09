@@ -3,5 +3,7 @@ PERMISSIONS:
     - "License"
   PRODUCT:
     - "Owner"
+  BLACKLIST:
+    - "Owner"
   SELF_LICENSES:
     - "Customer"
