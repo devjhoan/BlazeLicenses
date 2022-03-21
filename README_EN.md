@@ -60,7 +60,7 @@ Here is the link to the document [How to use?](https://github.com/DevJhoan/Blaze
 - [x] Add support for hwid.
 
 ## Support? 💁🏻
-If you don't understand something and/or want to ask something about the licensing system, you can enter our [Discord](https://strider.cloud)
+If you don't understand something and/or want to ask something about the licensing system, you can enter our [Discord](https://strider.cloud/discord)
 
 ## Show your support 💙
 
