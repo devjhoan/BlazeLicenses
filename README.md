@@ -59,7 +59,7 @@ Aquí está el enlace al documento [Cómo usar?](https://github.com/DevJhoan/Bla
 - [x] Agregar soporte para hwid.
 
 ## Soporte? 💁🏻
-Si no entiendes algo y/o quieres preguntar algo sobre el sistema de licencias, puedes entrar a nuestro [Discord](https://strider.cloud)
+Si no entiendes algo y/o quieres preguntar algo sobre el sistema de licencias, puedes entrar a nuestro [Discord](https://strider.cloud/discord)
 
 ## Muestra tu apoyo 💙
 
