@@ -1,9 +1,13 @@
-const { glob } = require("glob");
+const { connect } = require('mongoose');
 const { promisify } = require("util");
-const mongoose = require("mongoose");
+const { glob } = require("glob");
 const globPromise = promisify(glob);
 const chalk = require('chalk');
 
+/**
+ * 
+ * @param {import('../typings/Client').Blaze} client 
+ */
 module.exports = async (client) => {
     // Events
     console.log(chalk.cyan.bold('EVENTS STATUS━━━━━━━━━━━━━━━━━━━━┓'));
@@ -24,39 +28,33 @@ module.exports = async (client) => {
     const CommandsArray = [];
     slashCommands.map((value) => {
         const file = require(value);
-        let cmdName;
-        let cmdOption;
-        if (!file?.name) return cmdName = 'No cmd name', cmdOption = '❌';
-        else {
-            cmdName = file.name;
-            cmdOption = '✅';
-        }
+        const cmdName = file.name ? file.name : "No name";
+        const cmdOption = file.name ? "✅" : "❌";
         
         client.commands.set(file.name, file);
 
-        if (["MESSAGE", "USER"].includes(file.type)) delete file.description;
         CommandsArray.push(file);
-        client.permissions.push(file);
         console.log(`${chalk.yellow.bold('┃')} Loaded: ${cmdOption} ${chalk.yellow.bold('┃')} ${cmdName}`);
     });
     console.log(chalk.yellow.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
     
     client.on("ready", async () => {
-        const MONGO_URI = client.config.BOT_CONFIG.MONGO_URI;
+        const guild = client.guilds.cache.get(client.config.BOT_CONFIG.GUILD_ID);
         console.log(chalk.red.bold('BOT INFO━━━━━━━━━━━━━━━━━━━━━━━━━┓'));
         console.log(`${chalk.red.bold('┃')} Logged in ${client.user.tag}`);
-        if (MONGO_URI) await mongoose.connect(MONGO_URI).then(() => console.log(`${chalk.red.bold('┃')} Connected to MongoDB`));
-        
-        const guild = client.guilds.cache.get(client.config.BOT_CONFIG.GUILD_ID);
-        await guild.commands.set(CommandsArray).then((x) => {
-            console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
-        }).catch((error) => {
-            console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
+        connect(client.config.MONGO_URI).then(() => {
+            console.log(`${chalk.red.bold('┃')} Connected to MongoDB`);
+        }).catch(() => {
+            console.log(`${chalk.red.bold('┃')} Error connecting to MongoDB`);
+            process.exit(1);
+        });
+        console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
+        await guild.commands.set(CommandsArray).catch((error) => {
             console.log(chalk.red.bold('BOT ERROR━━━━━━━━━━━━━━━━━━━━━━━━━┓'));
             console.log(`${chalk.red.bold('┃')} ${error}`);
             console.log(`${chalk.red.bold('┃')} strider.cloud/discord`);
             console.log(chalk.red.bold('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'));
-        })
+        });
         require("../api/app");
     });
 };
