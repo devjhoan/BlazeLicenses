@@ -1,8 +1,9 @@
 const { Client, CommandInteraction, MessageEmbed } = require("discord.js");
 const blacklistModel = require("../models/blacklistModel");
 const { paginationEmbed } = require("../functions/Utils");
+const { Command } = require("../typings/Command");
 
-module.exports = {
+module.exports = new Command({
     name: "blacklist",
     description: "Manage the blacklist system",
     type: 'CHAT_INPUT',
@@ -213,4 +214,4 @@ module.exports = {
             paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "60s", vanish);
         }
     },
-};
+});

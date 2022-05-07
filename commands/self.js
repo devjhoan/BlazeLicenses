@@ -1,8 +1,9 @@
 const { Client, CommandInteraction, MessageEmbed } = require("discord.js");
 const { paginationEmbed, makeLicenseEmbed } = require("../functions/Utils");
 const licenseModel = require("../models/licenseModel");
+const { Command } = require("../typings/Command");
 
-module.exports = {
+module.exports = new Command({
     name: "self",
     description: "Blaze Licenses",
     type: 'CHAT_INPUT',
@@ -51,4 +52,4 @@ module.exports = {
             paginationEmbed(interaction, ["⏪", "Previous", "Next", "⏩"], embeds, "15s", true);
         } 
     },
-};
+});

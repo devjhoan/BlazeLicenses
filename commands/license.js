@@ -2,8 +2,9 @@ const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButto
 const { generateLicense, paginationEmbed, ask, cancelAsk, countButtons, makeLicenseEmbed } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
 const licenseModel = require("../models/licenseModel");
+const { Command } = require("../typings/Command");
 
-module.exports = {
+module.exports = new Command({
     name: "license",
     description: "Blaze licenses",
     type: 'CHAT_INPUT',
@@ -733,4 +734,4 @@ module.exports = {
             });
         }
     },
-};
+});

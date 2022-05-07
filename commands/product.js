@@ -1,8 +1,9 @@
 const { Client, CommandInteraction, MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const { paginationEmbed } = require("../functions/Utils");
 const productModel = require("../models/productsModel");
+const { Command } = require("../typings/Command");
 
-module.exports = {
+module.exports = new Command({
     name: "product",
     description: "Blaze License",
     type: 'CHAT_INPUT',
@@ -349,4 +350,4 @@ module.exports = {
             ], ephemeral: vanish});
         }
     },
-};
+});
