@@ -1,67 +1,5 @@
-const { Client, MessageActionRow, MessageButton, Message, CommandInteraction, Guild, MessageEmbed } = require("discord.js")
+const { MessageActionRow, MessageButton, Message, CommandInteraction, MessageEmbed } = require("discord.js")
 const ms = require("ms")
-
-/**
- * 
- * @param {Guild} guild 
- * @param {Client} client 
- * @returns 
- */
-async function loadPermissions(guild, client) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const commandsLoaded = [];
-            const CommandsArray = client.permissions;
-            await guild.commands.set(CommandsArray).then((cmd) => {
-                const fileCommands = client.commandsFile;
-                const getRoles = (command_name) => {
-                    const commandPermission = CommandsArray.find((x) => {
-                        return x.name === command_name;
-                    })?.permission || [];
-                    if (commandPermission.length > 0) commandsLoaded.push(command_name);
-                    else return false;
-        
-                    const arrayRoles = fileCommands.PERMISSIONS[commandPermission];
-                    return guild.roles.cache.filter(x => arrayRoles?.includes(x.id) || arrayRoles?.includes(x.name));
-                };
-        
-                const fullPermissions = cmd.reduce((accumulator, x) => {   
-                    const roles = getRoles(x.name);
-                    if (!roles) return accumulator;
-        
-                    const permissions = roles.reduce((a, v) => {
-                        return [
-                            ...a,
-                            {
-                                id: v.id,
-                                type: "ROLE",
-                                permission: true,
-                            },
-                            {
-                                id: guild.id,
-                                type: "ROLE",
-                                permission: false,
-                            }
-                        ]
-                    }, []);
-        
-                    return [
-                        ...accumulator,
-                        {
-                            id: x.id,
-                            permissions,
-                        }
-                    ]
-                }, []);
-                guild.commands.permissions.set({ fullPermissions }).then(() => {
-                    resolve(CommandsArray)
-                });
-            });
-        } catch (error) {
-            reject(error);
-        }
-    });
-}
 
 /**
  * 
@@ -270,7 +208,6 @@ function makeLicenseEmbed(license, interaction, title) {
 module.exports = {
     generateLicense,
     paginationEmbed,
-    loadPermissions,
     countButtons,
     cancelAsk,
     ask,
