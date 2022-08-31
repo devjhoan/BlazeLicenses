@@ -23,7 +23,7 @@
         "express": "^4.17.2",
         "glob": "7.2.0",
         "js-yaml": "4.1.0",
-        "mongoose": "6.1.6",
+        "mongoose": "6.4.6",
         "table": "6.8.0"
     }
 }
