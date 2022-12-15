@@ -65,6 +65,10 @@ Si no entiendes algo y/o quieres preguntar algo sobre el sistema de licencias, p
 
 ¡Dale un ⭐️ si este proyecto te ayudó!
 
+## Terminos ⚠
+
+Recuerde que no puede reclamar mi codigo como suyo y/o vender mi codigo 
+
 ## Licencia  📄
 **Blaze Licenses** esta licenciado bajo la [MIT License](https://github.com/DevJhoan/BlazeLicenses/blob/master/LICENSE)
 
